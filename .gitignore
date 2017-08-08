@@ -97,3 +97,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+pip-selfcheck\.json
+
+bin/
+
+include/
