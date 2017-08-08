@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from neomodel import db
 
-from base.base_model import ConnectDb
+from base.connect_db import ConnectDB
 
 class TestConnectDb(TestCase):
 
@@ -11,7 +11,7 @@ class TestConnectDb(TestCase):
         """
         Test if config file is readable
         """
-        credentials = ConnectDb.load_default_config()
+        credentials = ConnectDB.load_default_config()
 
         expected_keys = {'user', 'password', 'url', 'protocol','port'}
         found_keys = set(list(credentials.keys()))
@@ -19,7 +19,7 @@ class TestConnectDb(TestCase):
         self.assertSetEqual(expected_keys, found_keys)
 
     def test_connecting_database(self):
-        ConnectDb.connect_database()
+        ConnectDB.connect_database()
 
         db.cypher_query("""
         CREATE (TestNode:TEST {message: 'JUST FOR TESTING CONNECTION', val: 0})
