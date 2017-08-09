@@ -6,7 +6,7 @@ from base.base_model import BaseModel
 class User(BaseModel):
     # Basic field names
     name = StringProperty(required=True)
-    username = StringProperty(required=True)
+    username = StringProperty(required=True, unique_index=True)
     address = StringProperty(default=None)
     mail_address = EmailProperty(default=None)
 
@@ -26,7 +26,14 @@ class User(BaseModel):
         p = ''.join([''.join(_) for _ in s]).encode('utf8')
         #TODO: Look for beter algorithm to use
         self.password_ = hashlib.sha384(p).hexdigest()
-    
+
+    def save(self):
+        # validate username
+        if len(User.nodes.filter(username=self.username, uid__ne=self.uid)) == 0:
+            return super(User, self).save()
+        else:
+            return None
+
 def factors(a_string,b_string):
     """
     Given two numbers a, b, get the factors
