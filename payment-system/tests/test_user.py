@@ -89,7 +89,11 @@ class TestUser(TestCase):
         self.assertTrue(result)
 
     def test_login_incorrect_password(self):
-        pass
+        """
+        If user can't access should return false
+        """
+        result = User.login('test01', 'incorrect password')
+        self.assertFalse(result)
 
     def test_login_inactive_user(self):
         pass
