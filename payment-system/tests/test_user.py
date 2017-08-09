@@ -48,18 +48,18 @@ class TestUser(TestCase):
         result = len(User.nodes.filter(username=self.user.username))
         self.assertEqual(1, result)
 
-    def test_register_user_with_used_username_return_none(self):
+    def test_message_registering_user_with_used_username(self):
         """
-        Should get none when saving user with an already
+        Should get 'username_in_use' when saving user with an already
         used username
         """
         user2 = User(name="Testing User 02",
                      username="test01",
                      password='weak password')
 
-        result2 = user2.save()
+        result = user2.save()
 
-        self.assertIsNone(result2, msg="Item was saved with same username")
+        self.assertEqual('username_in_use', result)
 
     def test_update_user(self):
         """
@@ -113,6 +113,9 @@ class TestUser(TestCase):
         """
         result = User.login('not_found_username', self.passwd)
         self.assertEqual(result, 'inexistent')
+
+    def test_creating_user_without_password(self):
+        pass
 
     def tearDown(self):
         if self.user.save() is not None:
