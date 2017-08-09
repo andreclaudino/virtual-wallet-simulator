@@ -115,6 +115,20 @@ class TestUser(TestCase):
         self.assertEqual(result, 'inexistent')
 
     def test_creating_user_without_password(self):
+        """
+        When creating user without password,
+        it should block and return 'no_password_given'
+        """
+        user = User(name="Testing User",
+                    username="test02",
+                    adress="0, Dummy Street, 219875-456",
+                    phone_number='+55 21 99999-999',
+                    mail_address='test@test_users.com')
+        result = user.save()
+
+        self.assertEqual('no_password_given', result)
+
+    def test_creating_user_without_username(self):
         pass
 
     def tearDown(self):
