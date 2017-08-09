@@ -43,6 +43,10 @@ class User(BaseModel):
             * 'no_password_given' if password is not set
             * 'no_username_given' if username is not set
         """
+
+        if not hasattr(self, 'password_') or self.password_ is None:
+            return 'no_password_given'
+
         # validate username
         if len(User.nodes.filter(username=self.username, uid__ne=self.uid)) == 0:
             return super(User, self).save()
