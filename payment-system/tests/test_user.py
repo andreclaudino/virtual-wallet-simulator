@@ -96,8 +96,25 @@ class TestUser(TestCase):
         self.assertFalse(result)
 
     def test_login_inactive_user(self):
-        pass
+        """
+        Should return 'inactive during login if user is inactive
+        and password correct
+        """
+        self.user.active = False
+        self.user.save()
+        result = User.login('test01', self.passwd)
+        self.assertEqual(result, 'inactive')
+        self.user.active = True
+        self.user.save()
+
+    def test_login_inexistent_user(self):
+        """
+        Should return 'inexistent' if username not found
+        """
+        result = User.login('not_found_username', self.passwd)
+        self.assertEqual(result, 'inexistent')
 
     def tearDown(self):
         if self.user.save() is not None:
             self.user.delete()
+
