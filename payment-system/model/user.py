@@ -20,12 +20,7 @@ class User(BaseModel):
 
     @password.setter
     def password(self, value):
-        suid = str(self.uid)
-        a, b = factors(suid, value)
-        s = zip(suid*a, value*b)
-        p = ''.join([''.join(_) for _ in s]).encode('utf8')
-        #TODO: Look for beter algorithm to use
-        self.password_ = hashlib.sha384(p).hexdigest()
+        self.password_ = hash_pwd(self.uid, value)
 
     def save(self):
         # validate username
@@ -33,6 +28,14 @@ class User(BaseModel):
             return super(User, self).save()
         else:
             return None
+
+    @staticmethod
+    def login(username, passwd):
+        # find user by username
+        user = User.nodes.get_or_none(username=username)
+        hash_passwd = hash_pwd(user.uid, passwd)
+        return (user.password_ == hash_passwd)
+
 
 def factors(a_string,b_string):
     """
@@ -45,3 +48,12 @@ def factors(a_string,b_string):
     b = len(b_string)
     lcm =  int(abs(a * b) / math.gcd(a,b) if a and b else 0)
     return lcm // a, lcm // b
+
+def hash_pwd(base_k, val):
+    suid = str(base_k)
+    value = str(val)
+    a, b = factors(suid, value)
+    s = zip(suid * a, value * b)
+    p = ''.join([''.join(_) for _ in s]).encode('utf8')
+    # TODO: Look for beter algorithm to use
+    return hashlib.sha384(p).hexdigest()
