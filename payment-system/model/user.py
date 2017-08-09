@@ -31,11 +31,22 @@ class User(BaseModel):
 
     @staticmethod
     def login(username, passwd):
+        """
+        Try to login an user
+        :param username: username to login
+        :param passwd: user password before hash
+        :return:
+            * True if login is ok,
+            * False if wrong password
+            * 'inexistent' if username not found
+            * 'inactive' if user.active is False
+        """
         # find user by username
         user = User.nodes.get_or_none(username=username)
+        if user is None:
+            return 'inexistent'
         hash_passwd = hash_pwd(user.uid, passwd)
-        return (user.password_ == hash_passwd)
-
+        return (user.password_ == hash_passwd) if user.active else 'inactive'
 
 def factors(a_string,b_string):
     """
