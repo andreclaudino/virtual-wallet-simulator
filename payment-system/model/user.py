@@ -39,13 +39,16 @@ class User(BaseModel):
         validates if an username is in use before save it
         :return:
             * Saved user object if it's ok
-            * None if username already in use
+            * 'username_in_use' if username already in use
+            * 'no_password_given' if password is not set
+            * 'no_username_given' if username is not set
         """
         # validate username
         if len(User.nodes.filter(username=self.username, uid__ne=self.uid)) == 0:
             return super(User, self).save()
         else:
-            return None
+            # Found user with same username and different uid, so, username is in use
+            return 'username_in_use'
 
     @staticmethod
     def login(username, passwd):
