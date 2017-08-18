@@ -1,11 +1,19 @@
+"""
+This module contains User model class and some
+useful functions for it
+"""
 import hashlib
 import math
 
 from neomodel.properties import StringProperty, EmailProperty
 
 from base.base_model import BaseModel
-from exceptions.user_exception import UsernameInUse, UserInactive, UserPasswordNotGiven, UsernameNotGiven, \
-    UserPasswordIncorrect, UsernameNotFound
+from exceptions.user_exception import UsernameInUse
+from exceptions.user_exception import UserInactive
+from exceptions.user_exception import UserPasswordNotGiven
+from exceptions.user_exception import UsernameNotGiven
+from exceptions.user_exception import UserPasswordIncorrect
+from exceptions.user_exception import UsernameNotFound
 
 
 class User(BaseModel):
