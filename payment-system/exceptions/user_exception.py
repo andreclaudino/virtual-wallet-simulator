@@ -55,6 +55,12 @@ class UserInactive(UserException):
     Raised when trying to login an inactive user
     """
     def __init__(self, *args, **kwargs):
-        super().__init__('Cant proceed login: User is inactive', *args, **kwargs)
+        super().__init__('User is inactive', *args, **kwargs)
 
 
+class UsernameNotFound(UserException):
+    """
+    Raised when trying to login an inexistent user
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__('Username not found', *args, **kwargs)
