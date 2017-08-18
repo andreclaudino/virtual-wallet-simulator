@@ -2,7 +2,8 @@ import hashlib
 from unittest import TestCase
 
 from base.connect_db import ConnectDB
-from exceptions.user_exception import UsernameInUse, UserInactive, UserPasswordNotGiven, UsernameNotGiven
+from exceptions.user_exception import UsernameInUse, UserInactive, UserPasswordNotGiven, UsernameNotGiven, \
+    UserPasswordIncorrect, UsernameNotFound
 from model.user import User, factors
 
 
@@ -98,21 +99,22 @@ class TestUser(TestCase):
 
     def test_login_correct_password(self):
         """
-        If user can access should return true
+        If user can access should return the
+        user object
         """
         result = User.login('test01', self.passwd)
-        self.assertTrue(result)
+        self.assertEqual('test01', result.username)
 
     def test_login_incorrect_password(self):
         """
         If user can't access should return false
         """
-        result = User.login('test01', 'incorrect password')
-        self.assertFalse(result)
+        with self.assertRaises(UserPasswordIncorrect):
+            User.login('test01', 'incorrect password')
 
     def test_login_inactive_user(self):
         """
-        Should return raise exception during login
+        Should raise exception during login
         if user is inactive and password correct
         """
         # Turn user to inactive for testing purposes
@@ -130,8 +132,8 @@ class TestUser(TestCase):
         """
         Should return 'inexistent' if username not found
         """
-        result = User.login('not_found_username', self.passwd)
-        self.assertEqual(result, 'inexistent')
+        with self.assertRaises(UsernameNotFound):
+            User.login('not_found_username', self.passwd)
 
     def tearDown(self):
         if self.user.save() is not None:
