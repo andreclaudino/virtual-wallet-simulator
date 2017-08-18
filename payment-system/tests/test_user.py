@@ -1,8 +1,10 @@
+import hashlib
 from unittest import TestCase
 
 from base.connect_db import ConnectDB
+from exceptions.user_exception import UsernameInUse, UserInactive
 from model.user import User, factors
-import hashlib
+
 
 class TestUser(TestCase):
 
@@ -82,13 +84,17 @@ class TestUser(TestCase):
 
     def test_login_inactive_user(self):
         """
-        Should return 'inactive during login if user is inactive
-        and password correct
+        Should return raise exception during login
+        if user is inactive and password correct
         """
+        # Turn user to inactive for testing purposes
         self.user.active = False
         self.user.save()
-        result = User.login('test01', self.passwd)
-        self.assertEqual(result, 'inactive')
+
+        with self.assertRaises(UserInactive):
+            User.login('test01', self.passwd)
+
+        # Turn user active again
         self.user.active = True
         self.user.save()
 
