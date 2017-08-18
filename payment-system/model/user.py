@@ -4,7 +4,8 @@ import math
 from neomodel.properties import StringProperty, EmailProperty
 
 from base.base_model import BaseModel
-from exceptions.user_exception import UsernameInUse, UserInactive, UserPasswordNotGiven, UsernameNotGiven
+from exceptions.user_exception import UsernameInUse, UserInactive, UserPasswordNotGiven, UsernameNotGiven, \
+    UserPasswordIncorrect, UsernameNotFound
 
 
 class User(BaseModel):
@@ -75,11 +76,19 @@ class User(BaseModel):
         # find user by username
         user = User.nodes.get_or_none(username=username)
         if user is None:
-            return 'inexistent'
-        hash_passwd = mixture_pwd(user.uid, passwd)
+            raise UsernameNotFound()
+
+        # Test if user is active
         if user.active:
-            return (user.password_ == hash_passwd)
+            # If user is active, compare password
+            hash_passwd = mixture_pwd(user.uid, passwd)
+            if user.password_ == hash_passwd:
+                return user
+            else:
+                # If password is wrong, raise an exception
+                raise UserPasswordIncorrect()
         else:
+            # If user is inactive, raise an exception
             raise UserInactive()
 
 
