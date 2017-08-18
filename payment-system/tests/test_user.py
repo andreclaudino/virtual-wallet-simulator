@@ -33,7 +33,7 @@ class TestUser(TestCase):
 
         self.assertEqual(h, self.user.password)
 
-    def test_register_user_with_used_username(self):
+    def test_creating_user_with_used_username(self):
         """
         Should raise an UsernameInUse
         exception
@@ -97,7 +97,7 @@ class TestUser(TestCase):
         user2 = User.nodes.get_or_none(username='test01')
         self.assertEqual(user2.mail_address, 'user1@mail_adress.com')
 
-    def test_login_correct_password(self):
+    def test_login_with_correct_password(self):
         """
         If user can access should return the
         user object
