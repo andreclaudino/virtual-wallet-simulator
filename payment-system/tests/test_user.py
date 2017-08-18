@@ -32,8 +32,8 @@ class TestUser(TestCase):
 
     def test_register_user_with_used_username(self):
         """
-        Shouldn't save an user with an already
-        used username
+        Should raise an UsernameInUse
+        exception
         """
 
         user2 = User(name="Testing User 02",
@@ -43,23 +43,8 @@ class TestUser(TestCase):
                      mail_address='test@test_users.com',
                      password='weak password')
 
-        user2.save()
-
-        result = len(User.nodes.filter(username=self.user.username))
-        self.assertEqual(1, result)
-
-    def test_message_registering_user_with_used_username(self):
-        """
-        Should get 'username_in_use' when saving user with an already
-        used username
-        """
-        user2 = User(name="Testing User 02",
-                     username="test01",
-                     password='weak password')
-
-        result = user2.save()
-
-        self.assertEqual('username_in_use', result)
+        with self.assertRaises(UsernameInUse):
+            user2.save()
 
     def test_update_user(self):
         """
