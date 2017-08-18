@@ -1,7 +1,11 @@
-from neomodel.properties import StringProperty, EmailProperty
-import math
 import hashlib
+import math
+
+from neomodel.properties import StringProperty, EmailProperty
+
 from base.base_model import BaseModel
+from exceptions.user_exception import UsernameInUse, UserInactive, UserPasswordNotGiven, UsernameNotGiven
+
 
 class User(BaseModel):
     """
@@ -44,17 +48,17 @@ class User(BaseModel):
             * 'no_username_given' if username is not set
         """
         if not hasattr(self, 'username') or self.username is None:
-            return 'no_username_given'
+            raise UsernameNotGiven()
 
         if not hasattr(self, 'password_') or self.password_ is None:
-            return 'no_password_given'
+            raise UserPasswordNotGiven()
 
         # validate username
         if len(User.nodes.filter(username=self.username, uid__ne=self.uid)) == 0:
             return super(User, self).save()
         else:
             # Found user with same username and different uid, so, username is in use
-            return 'username_in_use'
+            raise UsernameInUse()
 
     @staticmethod
     def login(username, passwd):
@@ -73,7 +77,11 @@ class User(BaseModel):
         if user is None:
             return 'inexistent'
         hash_passwd = mixture_pwd(user.uid, passwd)
-        return (user.password_ == hash_passwd) if user.active else 'inactive'
+        if user.active:
+            return (user.password_ == hash_passwd)
+        else:
+            raise UserInactive()
+
 
 def factors(a_string,b_string):
     """
@@ -86,6 +94,7 @@ def factors(a_string,b_string):
     b = len(b_string)
     lcm =  int(abs(a * b) / math.gcd(a,b) if a and b else 0)
     return lcm // a, lcm // b
+
 
 def mixture_pwd(base_k, val):
     """
@@ -102,3 +111,4 @@ def mixture_pwd(base_k, val):
     p = ''.join([''.join(_) for _ in s]).encode('utf8')
     # TODO: Look for beter algorithm to use
     return hashlib.sha384(p).hexdigest()
+
