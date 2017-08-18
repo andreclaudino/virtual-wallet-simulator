@@ -1,8 +1,11 @@
+import hashlib
 from unittest import TestCase
 
 from base.connect_db import ConnectDB
+from exceptions.user_exception import UsernameInUse, UserInactive, UserPasswordNotGiven, UsernameNotGiven, \
+    UserPasswordIncorrect, UsernameNotFound
 from model.user import User, factors
-import hashlib
+
 
 class TestUser(TestCase):
 
@@ -30,10 +33,10 @@ class TestUser(TestCase):
 
         self.assertEqual(h, self.user.password)
 
-    def test_register_user_with_used_username(self):
+    def test_creating_user_with_used_username(self):
         """
-        Shouldn't save an user with an already
-        used username
+        Should raise an UsernameInUse
+        exception
         """
 
         user2 = User(name="Testing User 02",
@@ -43,23 +46,36 @@ class TestUser(TestCase):
                      mail_address='test@test_users.com',
                      password='weak password')
 
-        user2.save()
+        with self.assertRaises(UsernameInUse):
+            user2.save()
 
-        result = len(User.nodes.filter(username=self.user.username))
-        self.assertEqual(1, result)
-
-    def test_register_user_with_used_username_return_none(self):
+    def test_creating_user_without_password(self):
         """
-        Should get none when saving user with an already
-        used username
+        When creating user without password,
+        it should block and return 'no_password_given'
         """
-        user2 = User(name="Testing User 02",
-                     username="test01",
-                     password='weak password')
+        user = User(name="Testing User",
+                    username="test02",
+                    adress="0, Dummy Street, 219875-456",
+                    phone_number='+55 21 99999-999',
+                    mail_address='test@test_users.com')
 
-        result2 = user2.save()
+        with self.assertRaises(UserPasswordNotGiven):
+            user.save()
 
-        self.assertIsNone(result2, msg="Item was saved with same username")
+    def test_creating_user_without_username(self):
+        """
+        When creating user without username,
+        it should block and return 'no_username_given'
+        """
+        user = User(name="Testing User",
+                    adress="0, Dummy Street, 219875-456",
+                    phone_number='+55 21 99999-999',
+                    mail_address='test@test_users.com',
+                    password='a simple password')
+
+        with self.assertRaises(UsernameNotGiven):
+            user.save()
 
     def test_update_user(self):
         """
@@ -81,29 +97,34 @@ class TestUser(TestCase):
         user2 = User.nodes.get_or_none(username='test01')
         self.assertEqual(user2.mail_address, 'user1@mail_adress.com')
 
-    def test_login_correct_password(self):
+    def test_login_with_correct_password(self):
         """
-        If user can access should return true
+        If user can access should return the
+        user object
         """
         result = User.login('test01', self.passwd)
-        self.assertTrue(result)
+        self.assertEqual('test01', result.username)
 
     def test_login_incorrect_password(self):
         """
         If user can't access should return false
         """
-        result = User.login('test01', 'incorrect password')
-        self.assertFalse(result)
+        with self.assertRaises(UserPasswordIncorrect):
+            User.login('test01', 'incorrect password')
 
     def test_login_inactive_user(self):
         """
-        Should return 'inactive during login if user is inactive
-        and password correct
+        Should raise exception during login
+        if user is inactive and password correct
         """
+        # Turn user to inactive for testing purposes
         self.user.active = False
         self.user.save()
-        result = User.login('test01', self.passwd)
-        self.assertEqual(result, 'inactive')
+
+        with self.assertRaises(UserInactive):
+            User.login('test01', self.passwd)
+
+        # Turn user active again
         self.user.active = True
         self.user.save()
 
@@ -111,8 +132,8 @@ class TestUser(TestCase):
         """
         Should return 'inexistent' if username not found
         """
-        result = User.login('not_found_username', self.passwd)
-        self.assertEqual(result, 'inexistent')
+        with self.assertRaises(UsernameNotFound):
+            User.login('not_found_username', self.passwd)
 
     def tearDown(self):
         if self.user.save() is not None:
