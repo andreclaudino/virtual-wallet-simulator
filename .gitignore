@@ -105,3 +105,9 @@ bin/
 include/
 
 payment-system/\.idea/
+
+db_credentials\.json
+
+payment-system/base/\.idea/
+
+payment-system/server\.py
