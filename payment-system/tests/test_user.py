@@ -2,7 +2,7 @@ import hashlib
 from unittest import TestCase
 
 from base.connect_db import ConnectDB
-from exceptions.user_exception import UsernameInUse, UserInactive
+from exceptions.user_exception import UsernameInUse, UserInactive, UserPasswordNotGiven, UsernameNotGiven
 from model.user import User, factors
 
 
@@ -47,6 +47,34 @@ class TestUser(TestCase):
 
         with self.assertRaises(UsernameInUse):
             user2.save()
+
+    def test_creating_user_without_password(self):
+        """
+        When creating user without password,
+        it should block and return 'no_password_given'
+        """
+        user = User(name="Testing User",
+                    username="test02",
+                    adress="0, Dummy Street, 219875-456",
+                    phone_number='+55 21 99999-999',
+                    mail_address='test@test_users.com')
+
+        with self.assertRaises(UserPasswordNotGiven):
+            user.save()
+
+    def test_creating_user_without_username(self):
+        """
+        When creating user without username,
+        it should block and return 'no_username_given'
+        """
+        user = User(name="Testing User",
+                    adress="0, Dummy Street, 219875-456",
+                    phone_number='+55 21 99999-999',
+                    mail_address='test@test_users.com',
+                    password='a simple password')
+
+        with self.assertRaises(UsernameNotGiven):
+            user.save()
 
     def test_update_user(self):
         """
@@ -104,34 +132,6 @@ class TestUser(TestCase):
         """
         result = User.login('not_found_username', self.passwd)
         self.assertEqual(result, 'inexistent')
-
-    def test_creating_user_without_password(self):
-        """
-        When creating user without password,
-        it should block and return 'no_password_given'
-        """
-        user = User(name="Testing User",
-                    username="test02",
-                    adress="0, Dummy Street, 219875-456",
-                    phone_number='+55 21 99999-999',
-                    mail_address='test@test_users.com')
-        result = user.save()
-
-        self.assertEqual('no_password_given', result)
-
-    def test_creating_user_without_username(self):
-        """
-        When creating user without username,
-        it should block and return 'no_username_given'
-        """
-        user = User(name="Testing User",
-                    adress="0, Dummy Street, 219875-456",
-                    phone_number='+55 21 99999-999',
-                    mail_address='test@test_users.com',
-                    password='a simple password')
-        result = user.save()
-
-        self.assertEqual('no_username_given', result)
 
     def tearDown(self):
         if self.user.save() is not None:
