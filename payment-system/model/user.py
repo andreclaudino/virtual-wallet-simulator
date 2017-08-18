@@ -1,7 +1,20 @@
-from neomodel.properties import StringProperty, EmailProperty
-import math
+"""
+This module contains User model class and some
+useful functions for it
+"""
 import hashlib
+import math
+
+from neomodel.properties import StringProperty, EmailProperty
+
 from base.base_model import BaseModel
+from exceptions.user_exception import UsernameInUse
+from exceptions.user_exception import UserInactive
+from exceptions.user_exception import UserPasswordNotGiven
+from exceptions.user_exception import UsernameNotGiven
+from exceptions.user_exception import UserPasswordIncorrect
+from exceptions.user_exception import UsernameNotFound
+
 
 class User(BaseModel):
     """
@@ -39,13 +52,22 @@ class User(BaseModel):
         validates if an username is in use before save it
         :return:
             * Saved user object if it's ok
-            * None if username already in use
+            * 'username_in_use' if username already in use
+            * 'no_password_given' if password is not set
+            * 'no_username_given' if username is not set
         """
+        if not hasattr(self, 'username') or self.username is None:
+            raise UsernameNotGiven()
+
+        if not hasattr(self, 'password_') or self.password_ is None:
+            raise UserPasswordNotGiven()
+
         # validate username
         if len(User.nodes.filter(username=self.username, uid__ne=self.uid)) == 0:
             return super(User, self).save()
         else:
-            return None
+            # Found user with same username and different uid, so, username is in use
+            raise UsernameInUse()
 
     @staticmethod
     def login(username, passwd):
@@ -62,9 +84,21 @@ class User(BaseModel):
         # find user by username
         user = User.nodes.get_or_none(username=username)
         if user is None:
-            return 'inexistent'
-        hash_passwd = mixture_pwd(user.uid, passwd)
-        return (user.password_ == hash_passwd) if user.active else 'inactive'
+            raise UsernameNotFound()
+
+        # Test if user is active
+        if user.active:
+            # If user is active, compare password
+            hash_passwd = mixture_pwd(user.uid, passwd)
+            if user.password_ == hash_passwd:
+                return user
+            else:
+                # If password is wrong, raise an exception
+                raise UserPasswordIncorrect()
+        else:
+            # If user is inactive, raise an exception
+            raise UserInactive()
+
 
 def factors(a_string,b_string):
     """
@@ -77,6 +111,7 @@ def factors(a_string,b_string):
     b = len(b_string)
     lcm =  int(abs(a * b) / math.gcd(a,b) if a and b else 0)
     return lcm // a, lcm // b
+
 
 def mixture_pwd(base_k, val):
     """
@@ -93,3 +128,4 @@ def mixture_pwd(base_k, val):
     p = ''.join([''.join(_) for _ in s]).encode('utf8')
     # TODO: Look for beter algorithm to use
     return hashlib.sha384(p).hexdigest()
+
