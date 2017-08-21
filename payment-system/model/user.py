@@ -5,7 +5,10 @@ useful functions for it
 import hashlib
 import math
 
+from neomodel.cardinality import One, OneOrMore
 from neomodel.properties import StringProperty, EmailProperty
+from neomodel.relationship_manager import RelationshipTo
+from pip._vendor.pyparsing import ZeroOrMore
 
 from base.base_model import BaseModel
 from exceptions.user_exception import UsernameInUse
@@ -14,12 +17,14 @@ from exceptions.user_exception import UserPasswordNotGiven
 from exceptions.user_exception import UsernameNotGiven
 from exceptions.user_exception import UserPasswordIncorrect
 from exceptions.user_exception import UsernameNotFound
+from model.wallet import Wallet
 
 
 class User(BaseModel):
     """
     This class models an user in database
     """
+
     # Basic field names
     name = StringProperty(required=True)
     username = StringProperty(required=True, unique_index=True)
@@ -27,8 +32,11 @@ class User(BaseModel):
     mail_address = EmailProperty(default=None)
 
     # Sensible data
-    # TODO: Would be good hide password_ on collecting objetc
+    # TODO: Would be good hide password_ on collecting object
     password_ = StringProperty(db_property='password', required=True)
+
+    # Relationships
+    wallets = RelationshipTo('.wallet.Wallet', 'OWN')
 
     @property
     def password(self):
@@ -68,6 +76,21 @@ class User(BaseModel):
         else:
             # Found user with same username and different uid, so, username is in use
             raise UsernameInUse()
+
+    def create_wallet(self, label):
+        """
+        Create Wallet associated with user
+        :param label: name to identify this wallet
+        :return: generated wallet
+        """
+        wallet = Wallet(label=label)
+        wallet.save()
+
+        self.wallets.connect(wallet)
+        self.save()
+
+        return wallet
+
 
     @staticmethod
     def login(username, passwd):
