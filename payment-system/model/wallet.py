@@ -1,12 +1,12 @@
-from time import time
-
 from neomodel.cardinality import One
 from neomodel.properties import FloatProperty, StringProperty
 from neomodel.relationship_manager import RelationshipTo, RelationshipFrom
-from Cryptodome.PublicKey import RSA
+
+from datetime import datetime
 
 from base.base_model import BaseModel
 from exceptions.wallet_exceptions import WalletLimitExceed, UnchangebleWalletValue, WalletLimitNotAllowed
+from model.card import Card
 
 
 class Wallet(BaseModel):
@@ -55,3 +55,26 @@ class Wallet(BaseModel):
             self.real_limit = self.max_limit
 
         return self.max_limit
+
+    def create_card(self, **kwargs):
+        card = Card(**kwargs)
+        card.save()
+        card.wallet.connect(self)
+
+        self.cards.connect(card)
+        self.save()
+        card.save()
+
+        return card
+
+    def sorted_cards(self, fake_today=None, date_format='%m/%d/%Y'):
+        if not fake_today:
+            fake_today = datetime.today().date()
+        if type(fake_today) is str:
+            fake_today = datetime.strptime(fake_today, date_format).date()
+
+        cards = self.cards[:]
+
+        cards.sort()
+        return cards
+
