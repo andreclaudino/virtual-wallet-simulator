@@ -272,7 +272,6 @@ class TestCard(TestCase):
         Should raise PaymentExceed when
         value+card.free_limit exceed card maximum limit
         """
-        before_limit = self.card.free_limit
         self.card.purchase(200.0)
 
         with self.assertRaises(PaymentExceed):

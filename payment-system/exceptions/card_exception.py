@@ -7,7 +7,6 @@ class CardException(Exception):
         self.message = message
 
 
-# Exception raised when not all card parameters are given
 class NotEnoughCardArguments(CardException):
     """
     Exception raised when trying to create
@@ -32,4 +31,12 @@ class UnchangeableCardValue(CardException):
     raised when trying to change an unchangeble card value
     """
     def __init__(self, message="This value can not be changed directly", *args, **kwargs):
+        super(CardException, self).__init__(message, *args, **kwargs)
+
+
+class PaymentExceed(CardException):
+    """
+    raised when payment+free_limit exceed maximum card limit
+    """
+    def __init__(self, message="This payment exceeds maximum card limit", *args, **kwargs):
         super(CardException, self).__init__(message, *args, **kwargs)
