@@ -3,7 +3,10 @@ from unittest.case import TestCase
 import datetime
 
 from base.connect_db import ConnectDB
-from exceptions.card_exception import NotEnoughCardArguments, NotEnoughCardFreeLimit
+from exceptions.card_exception import NotEnoughCardArguments
+from exceptions.card_exception import NotEnoughCardFreeLimit
+from exceptions.card_exception import UnchangeableCardValue
+from exceptions.card_exception import PaymentExceed
 from model.card import Card
 from model.user import User
 from datetime import datetime
@@ -252,5 +255,28 @@ class TestCard(TestCase):
         with self.assertRaises(NotEnoughCardFreeLimit):
             self.card.purchase(before_limit+100.0)
 
+    def test_releasing_credit(self):
+        """
+        Should increase free limit by releasing credit, same for
+        wallet limit
+        """
 
+        before_limit = self.card.free_limit
+        self.card.purchase(200.0)
+        self.card.pay(100.0)
+        after_limit = self.card.free_limit
+        self.assertEqual(before_limit - 100.0, after_limit)
 
+    def test_raise_exception_on_exceed_payment(self):
+        """
+        Should raise PaymentExceed when
+        value+card.free_limit exceed card maximum limit
+        """
+        before_limit = self.card.free_limit
+        self.card.purchase(200.0)
+
+        with self.assertRaises(PaymentExceed):
+            self.card.pay(300.0)
+
+    def test_bill_generation(self):
+        pass
