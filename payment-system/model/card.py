@@ -4,7 +4,7 @@ from neomodel.properties import StringProperty, IntegerProperty, DateProperty, F
 from neomodel.relationship_manager import RelationshipFrom
 
 from base.base_model import BaseModel
-from exceptions.card_exception import NotEnoughCardArguments
+from exceptions.card_exception import NotEnoughCardArguments, UnchangeableCardValue, NotEnoughCardFreeLimit
 
 
 class Card(BaseModel):
@@ -62,6 +62,41 @@ class Card(BaseModel):
             self.fake_today = datetime.strptime(fake_today, date_format).date()
 
         self.date_format = date_format
+
+    @property
+    def free_limit(self):
+        return self.free_limit_
+
+    @free_limit.setter
+    def free_limit(self, value):
+        """
+        Raise exception: can't change free_limit directly
+        :param value: value to be changed
+        """
+        raise UnchangeableCardValue()
+
+    def decrease_free_limit(self, value):
+        """
+        Decrease free limit, used on purchasing
+        :param value: value to reduce free_limit
+        :return: new value for free_limit
+        """
+        # if there is not enough free_limit, raise exception
+        if self.free_limit < value:
+            raise NotEnoughCardFreeLimit()
+
+        # if there is free limit, reduce value amount from it
+        self.free_limit_ = self.free_limit_ - value
+        self.save()
+        return self.free_limit
+
+    def purchase(self, value):
+        """
+        Test if there is enough free limit, then
+        reduce free_limit by value
+        :param value: purchase value
+        """
+        self.decrease_free_limit(value)
 
     def __lt__(self, other):
 
