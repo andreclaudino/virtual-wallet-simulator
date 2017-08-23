@@ -52,8 +52,7 @@ class Card(BaseModel):
         Calculate next due date based on atual date and due_day
         :return: next due date
         """
-
-        due_date = self.fake_today.replace(day=self.due_day)
+        due_date = self.get_fake_today().replace(day=self.due_day)
 
         # due date is next month
         if self.due_day <= self.fake_today.day:
@@ -77,6 +76,9 @@ class Card(BaseModel):
             self.fake_today = datetime.strptime(fake_today, date_format).date()
 
         self.date_format = date_format
+
+    def get_fake_today(self):
+        return self.fake_today if self.fake_today else datetime.today().date()
 
     @property
     def free_limit(self):
