@@ -3,7 +3,7 @@ from unittest.case import TestCase
 import datetime
 
 from base.connect_db import ConnectDB
-from exceptions.card_exception import NotEnoughCardArguments
+from exceptions.card_exception import NotEnoughCardArguments, CardAlreadyInactive, CardAlreadyActive, CardIsInactive
 from exceptions.card_exception import NotEnoughCardFreeLimit
 from exceptions.card_exception import UnchangeableCardValue
 from exceptions.card_exception import PaymentExceed
@@ -276,6 +276,37 @@ class TestCard(TestCase):
 
         with self.assertRaises(PaymentExceed):
             self.card.pay(300.0)
+
+    def test_deactivating_inactive_card(self):
+        """
+        Should raise exception when card is already
+        inactive
+        """
+        # Raise exception if removing an already removed card
+        self.card.active = False
+        self.card.save()
+        with self.assertWarns(CardAlreadyInactive):
+            self.card.active = False
+
+    def test_activating_active_card(self):
+        """
+        Should raise exception when card is already
+        inactive
+        """
+        # Raise exception if removing an already removed card
+        with self.assertWarns(CardAlreadyActive):
+            self.card.active = True
+
+    def test_purchasing_with_inactive_card(self):
+        """
+        Should raise CardIsInactive when purchasing
+        with inactive card
+        """
+        self.card.active = False
+        self.card.save()
+
+        with self.assertRaises(CardIsInactive):
+            self.card.purchase(100.0)
 
     def test_bill_generation(self):
         pass
