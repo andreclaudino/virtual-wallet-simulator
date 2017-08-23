@@ -5,7 +5,8 @@ from neomodel.relationship_manager import RelationshipTo, RelationshipFrom
 from datetime import datetime
 
 from base.base_model import BaseModel
-from exceptions.wallet_exceptions import WalletLimitExceed, UnchangeableWalletValue, WalletLimitNotAllowed
+from exceptions.wallet_exceptions import WalletLimitExceed, UnchangeableWalletValue, WalletLimitNotAllowed, \
+    WalletFreeLimitExceed
 from model.card import Card
 
 
@@ -14,7 +15,7 @@ class Wallet(BaseModel):
     label = StringProperty(required=True)
     max_limit_ = FloatProperty(db_property='max_limit', default=0)
     real_limit_ = FloatProperty(db_property='real_limit', default=0)
-    used_limit_ = FloatProperty(db_property='used_limit', default=0)
+    free_limit_ = FloatProperty(db_property='free_limit', default=0)
 
     owner = RelationshipFrom('.user.User', 'OWNED', cardinality=One)
     cards = RelationshipTo('.card.Card', 'CONTAINS')
@@ -39,6 +40,40 @@ class Wallet(BaseModel):
     @max_limit.setter
     def max_limit(self, value):
         raise UnchangeableWalletValue()
+
+    @property
+    def free_limit(self):
+        return self.free_limit_
+
+    @free_limit.setter
+    def free_limit(self, value):
+        raise UnchangeableWalletValue()
+
+    def increase_free_limit(self, value=1.0):
+        """
+        Increase free_limit of wallet, usually
+        in card bill payments.
+        Raises an exception if new free_limit
+        become negative
+        :param value: amount to be increased
+        :return: new free limit
+        """
+        if self.free_limit + value < 0:
+            raise WalletLimitNotAllowed()
+        else:
+            self.free_limit_ += value
+            self.save()
+        return self.free_limit
+
+    def decrease_free_limit(self, value=1.0):
+        """
+        Decrease free_limit of wallet, usually
+        in purchases
+        Raises an exception if limit become negative
+        :param value: amount to reduce
+        :return: new limit
+        """
+        return self.increase_free_limit(-value)
 
     def increase_max_limit(self, amount=1.0):
         self.max_limit_ += amount
@@ -67,13 +102,8 @@ class Wallet(BaseModel):
 
         return card
 
-    def sorted_cards(self, fake_today=None, date_format='%m/%d/%Y'):
-        if not fake_today:
-            fake_today = datetime.today().date()
-        if type(fake_today) is str:
-            fake_today = datetime.strptime(fake_today, date_format).date()
-
-        cards = self.cards[:]
+    def sorted_cards(self):
+        cards = [card for card in self.cards if card.active]
 
         cards.sort()
         return cards
