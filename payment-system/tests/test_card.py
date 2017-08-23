@@ -223,6 +223,14 @@ class TestCard(TestCase):
         for _ in self.wallet.cards:
             _.delete()
 
+    def test_raise_exception_on_change_free_limit_directly(self):
+        """
+        Should raise an exception when free_limit is
+        changed directly
+        """
+        with self.assertRaises(UnchangeableCardValue):
+            self.card.free_limit = 500.0
+
     def test_purchasing(self):
         """
         Should reduce card free limit when payment is concluded
