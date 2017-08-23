@@ -3,7 +3,7 @@ from unittest.case import TestCase
 import datetime
 
 from base.connect_db import ConnectDB
-from exceptions.card_exception import NotEnoughCardArguments
+from exceptions.card_exception import NotEnoughCardArguments, NotEnoughCardFreeLimit
 from model.card import Card
 from model.user import User
 from datetime import datetime
@@ -222,3 +222,27 @@ class TestCard(TestCase):
 
         for _ in self.wallet.cards:
             _.delete()
+
+    def test_purchasing(self):
+        """
+        Should reduce card free limit when payment is concluded
+        """
+        before_limit = self.card.free_limit
+        self.card.purchase(200.0)
+        after_limit = self.card.free_limit
+
+        self.assertEqual(before_limit-200, after_limit)
+
+    def test_purchasing_without_enough_limit(self):
+        """
+        Should raise NotEnoughCardFreeLimit
+        if card has not enough free limit during
+        purchase
+        """
+        before_limit = self.card.free_limit
+
+        with self.assertRaises(NotEnoughCardFreeLimit):
+            self.card.purchase(before_limit+100.0)
+
+
+
