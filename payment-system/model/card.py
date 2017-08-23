@@ -1,10 +1,11 @@
+import warnings
 from datetime import datetime
 from neomodel.cardinality import One
 from neomodel.properties import StringProperty, IntegerProperty, DateProperty, FloatProperty
 from neomodel.relationship_manager import RelationshipFrom
 
 from base.base_model import BaseModel
-from exceptions.card_exception import NotEnoughCardArguments
+from exceptions.card_exception import NotEnoughCardArguments, CardAlreadyActive, CardAlreadyInactive, CardIsInactive
 from exceptions.card_exception import UnchangeableCardValue
 from exceptions.card_exception import NotEnoughCardFreeLimit
 from exceptions.card_exception import PaymentExceed
@@ -98,6 +99,30 @@ class Card(BaseModel):
         """
         raise UnchangeableCardValue()
 
+    @property
+    def active(self):
+        return self.active_
+
+    @active.setter
+    def active(self, state):
+        """
+        Change active state from an user.
+        Raise warning if state is not changed
+        :param state:
+        :return:
+        """
+
+        if self.active and state:
+            # raise warning if activating an already active card
+            warnings.warn(CardAlreadyActive())
+        elif (not self.active) and (not state):
+            # raise warning if deactivating an already inactive card
+            warnings.warn(CardAlreadyInactive())
+        else:
+            # Otherwise, process limits
+            self.active_ = state
+
+
     def decrease_free_limit(self, value):
         """
         Decrease free limit, used on purchasing.
@@ -135,9 +160,14 @@ class Card(BaseModel):
 
     def purchase(self, value):
         """
-        Process a purchase
+        Process a purchase,
+        raise CardIsInactive if card is inactive
         :param value: purchase value
         """
+
+        if not self.active:
+            raise CardIsInactive()
+
         self.decrease_free_limit(value)
 
     def pay(self, value):
