@@ -1,7 +1,9 @@
 from unittest.case import TestCase
 
 from base.connect_db import ConnectDB
-from exceptions.wallet_exceptions import WalletLimitExceed, WalletLimitNotAllowed, UnchangebleWalletValue
+from exceptions.wallet_exceptions import WalletLimitExceed
+from exceptions.wallet_exceptions import WalletLimitNotAllowed
+from exceptions.wallet_exceptions import UnchangeableWalletValue
 from model.user import User
 from model.wallet import Wallet
 
@@ -93,6 +95,6 @@ class TestWallet(TestCase):
         """
 
         wallet = self.user.wallets[0]
-        with self.assertRaises(UnchangebleWalletValue):
+        with self.assertRaises(UnchangeableWalletValue):
             wallet.max_limit = 10.0
 

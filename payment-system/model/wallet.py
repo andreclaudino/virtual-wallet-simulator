@@ -5,7 +5,7 @@ from neomodel.relationship_manager import RelationshipTo, RelationshipFrom
 from datetime import datetime
 
 from base.base_model import BaseModel
-from exceptions.wallet_exceptions import WalletLimitExceed, UnchangebleWalletValue, WalletLimitNotAllowed
+from exceptions.wallet_exceptions import WalletLimitExceed, UnchangeableWalletValue, WalletLimitNotAllowed
 from model.card import Card
 
 
@@ -38,7 +38,7 @@ class Wallet(BaseModel):
 
     @max_limit.setter
     def max_limit(self, value):
-        raise UnchangebleWalletValue()
+        raise UnchangeableWalletValue()
 
     def increase_max_limit(self, amount=1.0):
         self.max_limit_ += amount

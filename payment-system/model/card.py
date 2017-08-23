@@ -40,12 +40,17 @@ class Card(BaseModel):
         date_format = kwargs['date_format'] if 'date_format' in kwargs else '%m/%d/%Y'
 
         super(Card, self).__init__(**kwargs)
+
+        self.date_format = '%m/%d/%Y'
+        self.fake_today = None
+
         self.set_fake_today(fake_today, date_format)
 
     @property
     def due_date(self):
         """
-        Returns next due date based on atual date and due_day
+        Calculate next due date based on atual date and due_day
+        :return: next due date
         """
 
         due_date = self.fake_today.replace(day=self.due_day)
@@ -59,6 +64,13 @@ class Card(BaseModel):
         return due_date
 
     def set_fake_today(self, fake_today=None, date_format='%m/%d/%Y'):
+        """
+        Assume a fake today date, set for today if None. Useful for tests
+        and generate reference cards sortings
+        :param fake_today: date or string representing date to be assumed for today
+        :param date_format: format for parsing date when fake_today is string
+        :return:
+        """
         self.fake_today = fake_today if fake_today else datetime.today().date()
 
         if type(self.fake_today) is str:
@@ -68,19 +80,27 @@ class Card(BaseModel):
 
     @property
     def free_limit(self):
+        """
+        Just get free_limit_
+        :return: free_limit
+        """
         return self.free_limit_
 
     @free_limit.setter
     def free_limit(self, value):
         """
-        Raise exception: can't change free_limit directly
+        Just to avoid changing free_limit_ directly,
+        it should be increased or decreased on
+        each payment
         :param value: value to be changed
         """
         raise UnchangeableCardValue()
 
     def decrease_free_limit(self, value):
         """
-        Decrease free limit, used on purchasing
+        Decrease free limit, used on purchasing.
+        raise NotEnoughCardFreeLimit if free_limit is
+        not enough
         :param value: value to reduce free_limit
         :return: new value for free_limit
         """
@@ -95,7 +115,9 @@ class Card(BaseModel):
 
     def increase_free_limit(self, value):
         """
-        Increase free limit, used on purchasing
+        Increase free limit, used on payment.
+        raises PaymentExceed when payment value
+        and free_limit exceed maximum card limit
         :param value: value to increase free_limit
         :return: new value for free_limit
         """
@@ -111,16 +133,14 @@ class Card(BaseModel):
 
     def purchase(self, value):
         """
-        Test if there is enough free limit, then
-        reduce free_limit by value
+        Process a purchase
         :param value: purchase value
         """
         self.decrease_free_limit(value)
 
     def pay(self, value):
         """
-        Increase credit free_limit by releasing the
-        payed amount. Raise PaymentExceed if
+        Release credit increasing free_limit. Raise PaymentExceed if
         value+free_limit exceeds max_limit
         :param value: payed amount
         :return: new free_limit
@@ -128,7 +148,12 @@ class Card(BaseModel):
         self.increase_free_limit(value)
 
     def __lt__(self, other):
-
+        """
+        Order cards, first by largest due date,
+        then by smaller maxmimum limit
+        :param other: other object which is beeing compared
+        :return: True if is lower, False if is bigger than other
+        """
         if self.due_date > other.due_date:
             return True
         elif self.due_date == other.due_date:
