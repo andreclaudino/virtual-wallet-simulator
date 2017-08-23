@@ -4,7 +4,10 @@ from neomodel.properties import StringProperty, IntegerProperty, DateProperty, F
 from neomodel.relationship_manager import RelationshipFrom
 
 from base.base_model import BaseModel
-from exceptions.card_exception import NotEnoughCardArguments, UnchangeableCardValue, NotEnoughCardFreeLimit
+from exceptions.card_exception import NotEnoughCardArguments
+from exceptions.card_exception import UnchangeableCardValue
+from exceptions.card_exception import NotEnoughCardFreeLimit
+from exceptions.card_exception import PaymentExceed
 
 
 class Card(BaseModel):
@@ -90,6 +93,22 @@ class Card(BaseModel):
         self.save()
         return self.free_limit
 
+    def increase_free_limit(self, value):
+        """
+        Increase free limit, used on purchasing
+        :param value: value to increase free_limit
+        :return: new value for free_limit
+        """
+
+        # raise exception if exceed maximum limit of card
+        if self.free_limit + value > self.max_limit:
+            raise PaymentExceed
+
+        # if no problem, increase limit
+        self.free_limit_ = self.free_limit_ + value
+        self.save()
+        return self.free_limit
+
     def purchase(self, value):
         """
         Test if there is enough free limit, then
@@ -97,6 +116,16 @@ class Card(BaseModel):
         :param value: purchase value
         """
         self.decrease_free_limit(value)
+
+    def pay(self, value):
+        """
+        Increase credit free_limit by releasing the
+        payed amount. Raise PaymentExceed if
+        value+free_limit exceeds max_limit
+        :param value: payed amount
+        :return: new free_limit
+        """
+        self.increase_free_limit(value)
 
     def __lt__(self, other):
 
