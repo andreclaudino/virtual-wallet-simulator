@@ -131,6 +131,11 @@ class TestWallet(TestCase):
         pass
 
     def test_wallet_max_limit_increase_on_card_creation(self):
+        """
+        Wallet max limit should be increased on card creation
+        by card's max_limit
+        """
+
         limit_before = self.wallet.max_limit
         self.card = self.wallet.create_card(number='4539707916792445',
                                             due_day=15,
@@ -143,6 +148,10 @@ class TestWallet(TestCase):
         self.card.delete()
 
     def test_wallet_free_limit_increase_on_card_creation(self):
+        """
+        Wallet free limit should be increased on card creation
+        by card's free_limit
+        """
         limit_before = self.wallet.free_limit
         self.card = self.wallet.create_card(number='4539707916792445',
                                             due_day=15,
@@ -223,5 +232,9 @@ class TestWallet(TestCase):
             self.user.wallets[0].free_limit = 100.0
 
     def test_free_limit_negative(self):
+        """
+        Should raise WalletLimitNotAllowed when free_limit
+        become negative
+        """
         with self.assertRaises(WalletLimitNotAllowed):
             self.user.wallets[0].decrease_free_limit(1000)
