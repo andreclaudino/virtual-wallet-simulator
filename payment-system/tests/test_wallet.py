@@ -1,7 +1,7 @@
 from unittest.case import TestCase
 
 from base.connect_db import ConnectDB
-from exceptions.wallet_exceptions import WalletLimitExceed, WalletFreeLimitExceed
+from exceptions.wallet_exceptions import WalletLimitExceed
 from exceptions.wallet_exceptions import WalletLimitNotAllowed
 from exceptions.wallet_exceptions import UnchangeableWalletValue
 from model.user import User
@@ -13,14 +13,14 @@ class TestWallet(TestCase):
     def setUp(self):
         ConnectDB.connect_database()
         self.user = User(name="Testing User 01",
-                    username="test01",
-                    adress="0, Dummy Street, 219875-456",
-                    phone_number='+55 21 99999-999',
-                    mail_address='test@test_users.com',
-                    password='weak password')
+                         username="test01",
+                         adress="0, Dummy Street, 219875-456",
+                         phone_number='+55 21 99999-999',
+                         mail_address='test@test_users.com',
+                         password='weak password')
         self.user.save()
 
-        self.user.create_wallet("Test Wallet 01")
+        self.wallet = self.user.create_wallet("Test Wallet 01")
         self.wallet_uid = self.user.wallets[0].uid
 
     def tearDown(self):
@@ -129,6 +129,30 @@ class TestWallet(TestCase):
         without enough limit in wallet
         """
         pass
+
+    def test_wallet_max_limit_increase_on_card_creation(self):
+        limit_before = self.wallet.max_limit
+        self.card = self.wallet.create_card(number='4539707916792445',
+                                            due_day=15,
+                                            expiration_date='05/25/2022',
+                                            cvv='453',
+                                            max_limit=300.0)
+        limit_after = self.wallet.max_limit
+        self.assertEqual(limit_after, limit_before+300.0)
+
+        self.card.delete()
+
+    def test_wallet_free_limit_increase_on_card_creation(self):
+        limit_before = self.wallet.free_limit
+        self.card = self.wallet.create_card(number='4539707916792445',
+                                            due_day=15,
+                                            expiration_date='05/25/2022',
+                                            cvv='453',
+                                            max_limit=300.0)
+        limit_after = self.wallet.free_limit
+        self.assertEqual(limit_after, limit_before + 300.0)
+
+        self.card.delete()
 
     def test_ignoring_deactivated_cards_on_sort(self):
         """
