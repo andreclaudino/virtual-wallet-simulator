@@ -394,10 +394,38 @@ class TestCard(TestCase):
         card.delete()
 
     def test_wallet_free_limit_reduction_on_card_purchase(self):
-        pass
+        limit_before = self.wallet.free_limit
+        self.wallet.cards[0].purchase(100.0)
+        self.wallet.refresh()
+
+        limit_after = self.wallet.free_limit
+        self.assertEqual(limit_after, limit_before-100.0)
 
     def test_wallet_free_limit_increase_on_card_payment(self):
-        pass
+        """
+        Should increase wallet free_limit on card payment
+        """
+        limit_before = self.wallet.free_limit
+
+        # purchase 100 to reduce limit
+        self.wallet.cards[0].purchase(100.0)
+
+        # refresh
+        self.wallet.refresh()
+
+        limit_after = self.wallet.free_limit
+        self.assertEqual(limit_after, limit_before - 100.0)
+
+        # pay 50.0
+        self.wallet.cards[0].pay(50.0)
+        self.wallet.cards[0].refresh()
+
+        # refresh
+        self.wallet.refresh()
+
+        limit_after = self.wallet.free_limit
+
+        self.assertEqual(limit_after, limit_before - 50.0)
 
     def test_purchasing_with_inactive_card(self):
         """
