@@ -57,11 +57,8 @@ class Wallet(BaseModel):
         :param value: amount to be increased
         :return: new free limit
         """
-        if self.free_limit + value < 0:
-            raise WalletLimitNotAllowed()
-        else:
-            self.free_limit_ += value
-            self.save()
+        self.free_limit_ += value
+        self.save()
         return self.free_limit
 
     def decrease_free_limit(self, value=1.0):
@@ -72,7 +69,10 @@ class Wallet(BaseModel):
         :param value: amount to reduce
         :return: new limit
         """
-        return self.increase_free_limit(-value)
+        if self.free_limit < value:
+            raise WalletLimitNotAllowed()
+        else:
+            return self.increase_free_limit(-value)
 
     def increase_max_limit(self, amount=1.0):
         self.max_limit_ += amount
