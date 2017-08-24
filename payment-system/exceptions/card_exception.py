@@ -1,9 +1,9 @@
 class CardException(Exception):
     """
-    Base class for user exceptions
+    Base class for card exceptions
     """
-    def __init__(self, message="Generic error with user module", *args, **kwargs):
-        super(CardException, self).__init__(message, *args, **kwargs)
+    def __init__(self, message="Generic error with card module", *args, **kwargs):
+        super().__init__(message, *args, **kwargs)
         self.message = message
 
 
@@ -31,7 +31,7 @@ class UnchangeableCardValue(CardException):
     raised when trying to change an unchangeble card value
     """
     def __init__(self, message="This value can not be changed directly", *args, **kwargs):
-        super(CardException, self).__init__(message, *args, **kwargs)
+        super().__init__(message, *args, **kwargs)
 
 
 class PaymentExceed(CardException):
@@ -39,4 +39,49 @@ class PaymentExceed(CardException):
     raised when payment+free_limit exceed maximum card limit
     """
     def __init__(self, message="This payment exceeds maximum card limit", *args, **kwargs):
-        super(CardException, self).__init__(message, *args, **kwargs)
+        super().__init__(message, *args, **kwargs)
+
+
+class CardIsInactive(CardException):
+    """
+    raised when paying with inactive card
+    """
+    def __init__(self, message="This card is inactive", *args, **kwargs):
+        super().__init__(message, *args, **kwargs)
+
+
+## Warnings
+
+
+class CardWarning(Warning):
+    """
+    Base class for card warnings exceptions
+    """
+    def __init__(self, message="Generic warning with card module", *args, **kwargs):
+        super().__init__(message, *args, **kwargs)
+        self.message = message
+
+
+class CardActivationStateNotChanged(CardWarning):
+    """
+    raised when activation or deactivation don't change state,
+    avoid changing in limits
+    """
+    def __init__(self, message="Activation state not changed", *args, **kwargs):
+        super().__init__(message, *args, **kwargs)
+
+
+class CardAlreadyInactive(CardActivationStateNotChanged):
+    """
+    Raised when card is already inactive
+    """
+    def __init__(self, message="Card already inactive", *args, **kwargs):
+        super().__init__(message, *args, **kwargs)
+
+
+class CardAlreadyActive(CardActivationStateNotChanged):
+    """
+    Raised when card is already active
+    """
+    def __init__(self, message="Card already active", *args, **kwargs):
+        super().__init__(message, *args, **kwargs)
