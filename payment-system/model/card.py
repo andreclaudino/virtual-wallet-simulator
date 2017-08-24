@@ -121,7 +121,15 @@ class Card(BaseModel):
         else:
             # Otherwise, process limits
             self.active_ = state
-
+            if state:
+                # increase wallet limits if activating the card
+                self.wallet[0].increase_max_limit(self.max_limit)
+                self.wallet[0].increase_free_limit(self.max_limit)
+            else:
+                # decrease wallet limit if deactivating the card
+                self.wallet[0].decrease_max_limit(self.max_limit)
+                self.wallet[0].decrease_free_limit(self.max_limit)
+            self.save()
 
     def decrease_free_limit(self, value):
         """
