@@ -27,7 +27,8 @@ class Card(BaseModel):
             raise NotEnoughCardArguments
 
         # set initial free_limit equals to max_limit
-        kwargs['free_limit_'] = kwargs['max_limit']
+        kwargs['free_limit_'] = kwargs['free_limit_'] if 'free_limit_' in kwargs else kwargs['max_limit']
+
         kwargs['cvv'] = str(kwargs['cvv'])
 
         # as discussed by e-mail, due_day is limited from 1 to 28
@@ -144,8 +145,12 @@ class Card(BaseModel):
             raise NotEnoughCardFreeLimit()
 
         # if there is free limit, reduce value amount from it
-        self.free_limit_ = self.free_limit_ - value
+        self.free_limit_ -= value
         self.save()
+
+        self.wallet[0].decrease_free_limit(value)
+        self.wallet[0].refresh()
+
         return self.free_limit
 
     def increase_free_limit(self, value):
@@ -164,6 +169,10 @@ class Card(BaseModel):
         # if no problem, increase limit
         self.free_limit_ = self.free_limit_ + value
         self.save()
+
+        self.wallet[0].increase_free_limit(value)
+        self.wallet[0].refresh()
+
         return self.free_limit
 
     def purchase(self, value):
