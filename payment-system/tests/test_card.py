@@ -94,12 +94,10 @@ class TestCard(TestCase):
 
         # if due_day is past this month (due_day is less than today's day), card due date is next month
         if card.due_day <= day:
-            print("Due date is next month")
             self.assertEqual(card.due_date.month, month+1)
 
         # if due_day is not past this month, card due date is still this month
         if card.due_day > day:
-            print("Due date is this month")
             self.assertEqual(card.due_date.month, month)
 
         card.delete()
@@ -296,6 +294,110 @@ class TestCard(TestCase):
         # Raise exception if removing an already removed card
         with self.assertWarns(CardAlreadyActive):
             self.card.active = True
+
+    def test_wallets_max_limit_increase_on_card_activation(self):
+        """
+        Wallet max limit should be increased on activating card
+        """
+        card = self.wallet.create_card(number='4539707916792445',
+                                       due_day=15,
+                                       expiration_date='05/25/2022',
+                                       cvv='453',
+                                       max_limit=100.0)
+
+        ## Get limit with new card
+        limit_before = self.wallet.max_limit
+
+        # deactivate card, limit will be reduced
+        card.active = False
+        self.wallet.refresh()
+        limit_after = self.wallet.max_limit
+
+        self.assertEqual(limit_after, limit_before - card.max_limit)
+
+        # Activate card again, limit should be increased
+        card.active = True
+        self.wallet.refresh()
+        limit_after = self.wallet.max_limit
+
+        self.wallet.refresh()
+        self.assertEqual(limit_after, limit_before)
+
+        card.delete()
+
+    def test_wallets_max_limit_reduction_on_card_deactivation(self):
+        """
+        Wallet max limit should be decreased on deactivating card
+        """
+        card = self.wallet.create_card(number='4539707916792445',
+                                       due_day=15,
+                                       expiration_date='05/25/2022',
+                                       cvv='453',
+                                       max_limit=100.0)
+
+        limit_before = self.wallet.max_limit
+        card.active = False
+        self.wallet.refresh()
+        limit_after = self.wallet.max_limit
+
+        self.assertEqual(limit_after, limit_before-card.max_limit)
+
+        card.delete()
+
+    def test_wallets_free_limit_increase_on_card_activation(self):
+        """
+        Wallet free limit should be increased on activating card
+        """
+        card = self.wallet.create_card(number='4539707916792445',
+                                       due_day=15,
+                                       expiration_date='05/25/2022',
+                                       cvv='453',
+                                       max_limit=100.0)
+
+        ## Get limit with new card
+        limit_before = self.wallet.free_limit
+
+        # deactivate card, limit will be reduced
+        card.active = False
+        self.wallet.refresh()
+        limit_after = self.wallet.free_limit
+
+        self.assertEqual(limit_after, limit_before - card.free_limit)
+
+        # Activate card again, limit should be increased
+        card.active = True
+        self.wallet.refresh()
+        limit_after = self.wallet.free_limit
+
+        self.wallet.refresh()
+        self.assertEqual(limit_after, limit_before)
+
+        card.delete()
+
+    def test_wallets_free_limit_reduction_on_card_deactivation(self):
+        """
+        Wallet free limit should be decreased on deactivating card
+        """
+        card = self.wallet.create_card(number='4539707916792445',
+                                       due_day=15,
+                                       expiration_date='05/25/2022',
+                                       cvv='453',
+                                       max_limit=100.0)
+
+        limit_before = self.wallet.free_limit
+        card.active = False
+        self.wallet.refresh()
+        limit_after = self.wallet.free_limit
+
+        self.assertEqual(limit_after, limit_before - card.free_limit)
+
+        card.delete()
+
+    def test_wallet_free_limit_reduction_on_card_purchase(self):
+        pass
+
+    def test_wallet_free_limit_increase_on_card_payment(self):
+        pass
 
     def test_purchasing_with_inactive_card(self):
         """
