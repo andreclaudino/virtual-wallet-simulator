@@ -15,6 +15,7 @@ class WalletLimitExceed(WalletException):
         super(WalletException, self).__init__(message, *args, **kwargs)
         self.message = message
 
+
 class WalletLimitNotAllowed(WalletException):
     """
     raised when wallet limit is less than or equals to zero
@@ -22,6 +23,7 @@ class WalletLimitNotAllowed(WalletException):
     def __init__(self, message="Changing Limit turns it less than or equals to zero", *args, **kwargs):
         super(WalletException, self).__init__(message, *args, **kwargs)
         self.message = message
+
 
 class UnchangeableWalletValue(WalletException):
     """
