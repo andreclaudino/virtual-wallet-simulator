@@ -2,11 +2,10 @@ from neomodel.cardinality import One
 from neomodel.properties import FloatProperty, StringProperty
 from neomodel.relationship_manager import RelationshipTo, RelationshipFrom
 
-from datetime import datetime
-
 from base.base_model import BaseModel
-from exceptions.wallet_exceptions import WalletLimitExceed, UnchangeableWalletValue, WalletLimitNotAllowed, \
-    WalletFreeLimitExceed
+from exceptions.wallet_exceptions import WalletLimitExceed
+from exceptions.wallet_exceptions import UnchangeableWalletValue
+from exceptions.wallet_exceptions import WalletLimitNotAllowed
 from model.card import Card
 
 
@@ -97,6 +96,10 @@ class Wallet(BaseModel):
         card.wallet.connect(self)
 
         self.cards.connect(card)
+
+        self.increase_max_limit(card.max_limit)
+        self.increase_free_limit(card.free_limit)
+
         self.save()
         card.save()
 
