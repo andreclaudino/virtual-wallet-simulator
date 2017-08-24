@@ -76,6 +76,8 @@ class Wallet(BaseModel):
 
     def increase_max_limit(self, amount=1.0):
         self.max_limit_ += amount
+        self.save()
+        return self.max_limit
 
     def decrease_max_limit(self, amount=1.0):
 
@@ -83,7 +85,8 @@ class Wallet(BaseModel):
         if amount > self.max_limit:
             raise WalletLimitNotAllowed()
 
-        self.increase_max_limit(-amount)
+        self.max_limit_ -= amount
+        self.save()
 
         if self.real_limit > self.max_limit:
             self.real_limit = self.max_limit
