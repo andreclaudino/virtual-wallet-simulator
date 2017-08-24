@@ -1,12 +1,12 @@
-from time import time
-
 from neomodel.cardinality import One
 from neomodel.properties import FloatProperty, StringProperty
 from neomodel.relationship_manager import RelationshipTo, RelationshipFrom
-from Cryptodome.PublicKey import RSA
 
 from base.base_model import BaseModel
-from exceptions.wallet_exceptions import WalletLimitExceed, UnchangebleWalletValue, WalletLimitNotAllowed
+from exceptions.wallet_exceptions import WalletLimitExceed
+from exceptions.wallet_exceptions import UnchangeableWalletValue
+from exceptions.wallet_exceptions import WalletLimitNotAllowed
+from model.card import Card
 
 
 class Wallet(BaseModel):
@@ -14,7 +14,7 @@ class Wallet(BaseModel):
     label = StringProperty(required=True)
     max_limit_ = FloatProperty(db_property='max_limit', default=0)
     real_limit_ = FloatProperty(db_property='real_limit', default=0)
-    used_limit_ = FloatProperty(db_property='used_limit', default=0)
+    free_limit_ = FloatProperty(db_property='free_limit', default=0)
 
     owner = RelationshipFrom('.user.User', 'OWNED', cardinality=One)
     cards = RelationshipTo('.card.Card', 'CONTAINS')
@@ -38,10 +38,46 @@ class Wallet(BaseModel):
 
     @max_limit.setter
     def max_limit(self, value):
-        raise UnchangebleWalletValue()
+        raise UnchangeableWalletValue()
+
+    @property
+    def free_limit(self):
+        return self.free_limit_
+
+    @free_limit.setter
+    def free_limit(self, value):
+        raise UnchangeableWalletValue()
+
+    def increase_free_limit(self, value=1.0):
+        """
+        Increase free_limit of wallet, usually
+        in card bill payments.
+        Raises an exception if new free_limit
+        become negative
+        :param value: amount to be increased
+        :return: new free limit
+        """
+        self.free_limit_ += value
+        self.save()
+        return self.free_limit
+
+    def decrease_free_limit(self, value=1.0):
+        """
+        Decrease free_limit of wallet, usually
+        in purchases
+        Raises an exception if limit become negative
+        :param value: amount to reduce
+        :return: new limit
+        """
+        if self.free_limit < value:
+            raise WalletLimitNotAllowed()
+        else:
+            return self.increase_free_limit(-value)
 
     def increase_max_limit(self, amount=1.0):
         self.max_limit_ += amount
+        self.save()
+        return self.max_limit
 
     def decrease_max_limit(self, amount=1.0):
 
@@ -49,9 +85,32 @@ class Wallet(BaseModel):
         if amount > self.max_limit:
             raise WalletLimitNotAllowed()
 
-        self.increase_max_limit(-amount)
+        self.max_limit_ -= amount
+        self.save()
 
         if self.real_limit > self.max_limit:
             self.real_limit = self.max_limit
 
         return self.max_limit
+
+    def create_card(self, **kwargs):
+        card = Card(**kwargs)
+        card.save()
+        card.wallet.connect(self)
+
+        self.cards.connect(card)
+
+        self.increase_max_limit(card.max_limit)
+        self.increase_free_limit(card.free_limit)
+
+        self.save()
+        card.save()
+
+        return card
+
+    def sorted_cards(self):
+        cards = [card for card in self.cards if card.active]
+
+        cards.sort()
+        return cards
+

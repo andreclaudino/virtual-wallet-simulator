@@ -86,8 +86,11 @@ class User(BaseModel):
         wallet = Wallet(label=label)
         wallet.save()
 
+        wallet.owner.connect(self)
+
         self.wallets.connect(wallet)
         self.save()
+        wallet.save()
 
         return wallet
 

@@ -12,6 +12,12 @@ class BaseModel(StructuredNode):
 
     # Unique identifier
     uid = UniqueIdProperty()
-    active = BooleanProperty(default=True)
+    active_ = BooleanProperty(default=True)
 
-    ## TODO: use uid as neo4j internal id instead of uid
+    @property
+    def active(self):
+        return self.active_
+
+    @active.setter
+    def active(self, state):
+        self.active_ = state
