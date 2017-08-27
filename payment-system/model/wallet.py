@@ -21,7 +21,7 @@ class Wallet(BaseModel):
     cards = RelationshipTo('.card.Card', 'CONTAINS')
 
     purchases = RelationshipTo('.billing.Purchase', 'DID')
-    payments = RelationshipFrom('.wallet.Wallet', 'RECEIVED')
+    payments = RelationshipFrom('.billing.Payment', 'RECEIVED')
 
     @property
     def real_limit(self):
