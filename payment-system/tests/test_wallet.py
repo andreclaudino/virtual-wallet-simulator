@@ -183,11 +183,8 @@ class TestWallet(TestCase):
                                           cvv='008',
                                           max_limit=300.0)
 
-        for _ in self.wallet.cards:
-            _.set_fake_today(fake_today='08/22/2017')
-
-        self.assertListEqual(self.wallet.sorted_cards(), [card2, card3_1, card3_3, card4, card5_1,
-                                                          card5_2])
+        self.assertListEqual(self.wallet.sorted_cards(fake_today='08/22/2017'),
+                            [card2, card3_1, card3_3, card4, card5_1, card5_2])
 
     def test_free_limit_setting_directly(self):
         """
@@ -204,3 +201,4 @@ class TestWallet(TestCase):
         """
         with self.assertRaises(WalletLimitNotAllowed):
             self.user.wallets[0].decrease_free_limit(1000)
+
