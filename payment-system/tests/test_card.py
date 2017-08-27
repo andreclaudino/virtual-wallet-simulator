@@ -3,10 +3,10 @@ from unittest.case import TestCase
 import datetime
 
 from base.connect_db import ConnectDB
-from exceptions.card_exception import NotEnoughCardArguments, CardAlreadyInactive, CardAlreadyActive, CardIsInactive
-from exceptions.card_exception import NotEnoughCardFreeLimit
-from exceptions.card_exception import UnchangeableCardValue
-from exceptions.card_exception import PaymentExceed
+from exceptions.card_exceptions import NotEnoughCardArguments, CardAlreadyInactive, CardAlreadyActive, CardIsInactive
+from exceptions.card_exceptions import NotEnoughCardFreeLimit
+from exceptions.card_exceptions import UnchangeableCardValue
+from exceptions.card_exceptions import PaymentExceed
 from model.card import Card
 from model.user import User
 from datetime import datetime
@@ -168,11 +168,10 @@ class TestCard(TestCase):
         Cards should be sorted firts descendently by due date,
         next ascendently by limit
         """
-
         [_.delete() for _ in self.wallet.cards]
 
         card2 = self.wallet.create_card(number='4539707916792445',
-                                        due_day=28,
+                                        due_day=15,
                                         expiration_date='05/25/2022',
                                         cvv='002',
                                         max_limit=300.0)
@@ -193,7 +192,7 @@ class TestCard(TestCase):
                                           cvv='003',
                                           max_limit=200.0)
         card3_2 = self.wallet.create_card(number='4539707916792445',
-                                          due_day=25,
+                                          due_day=13,
                                           expiration_date='05/25/2022',
                                           cvv='004',
                                           max_limit=500.0)
@@ -218,11 +217,8 @@ class TestCard(TestCase):
         for _ in self.wallet.cards:
             _.set_fake_today(fake_today='08/22/2017')
 
-        self.assertListEqual(self.wallet.sorted_cards(), [card1, card3_1, card3_3, card4, card5_1,
-                                                          card5_2, card2, card3_2])
-
-        for _ in self.wallet.cards:
-            _.delete()
+        self.assertListEqual(self.wallet.sorted_cards(), [card2, card3_1, card3_3, card4, card5_1,
+                                                          card5_2])
 
     def test_raise_exception_on_change_free_limit_directly(self):
         """
@@ -437,6 +433,3 @@ class TestCard(TestCase):
 
         with self.assertRaises(CardIsInactive):
             self.card.purchase(100.0)
-
-    def test_bill_generation(self):
-        pass
