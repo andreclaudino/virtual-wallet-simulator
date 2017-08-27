@@ -151,8 +151,8 @@ class Card(BaseModel):
         self.free_limit_ -= value
         self.save()
 
-        self.wallet[0].decrease_free_limit(value)
-        self.wallet[0].refresh()
+        self.wallet.single().decrease_free_limit(value)
+        self.wallet.single().refresh()
 
         return self.free_limit
 

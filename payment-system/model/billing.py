@@ -11,7 +11,7 @@ class BillingAction(StructuredRel):
     date_time = DateTimeProperty(default_now=True)
 
 class Purchase(BaseModel):
-    total_ = FloatProperty(required=True)
+    total = FloatProperty(required=True)
 
     cards_ = RelationshipTo('.card.Card', 'WITH', model=BillingAction)
     wallet_ = RelationshipFrom('.wallet.Wallet', 'DONE_WITH', cardinality=One)
@@ -25,14 +25,6 @@ class Purchase(BaseModel):
         raise PurchaseUnchangeableProperty()
 
     @property
-    def total(self):
-        return self.total_
-
-    @total.setter
-    def wallet(self, total):
-        raise PurchaseUnchangeableProperty()
-
-    @property
     def cards(self):
         return self.cards_
 
@@ -40,15 +32,24 @@ class Purchase(BaseModel):
     def cards(self, card):
         raise PurchaseUnchangeableProperty()
 
-    def insert_card(self, card, value):
-        self.cards_.connect(card, {value: value})
+    def use_card(self, card, value):
+        self.cards_.connect(card, {'value': value})
         self.save()
-        card.purchases.connect(self)
+        card.purchases.connect(self, {'value': value})
+
+        card.decrease_free_limit(value)
         card.save()
 
+        return self
+
     def set_wallet(self, wallet):
+        self.save()
         self.wallet_.connect(wallet)
         wallet.purchases.connect(self)
+        self.save()
+        wallet.save()
+
+        return self
 
 
 class Payment(BaseModel):

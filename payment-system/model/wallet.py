@@ -6,6 +6,7 @@ from base.base_model import BaseModel
 from exceptions.wallet_exceptions import WalletLimitExceed, RealLimitExceeded
 from exceptions.wallet_exceptions import UnchangeableWalletValue
 from exceptions.wallet_exceptions import WalletLimitNotAllowed
+from model.billing import Purchase
 from model.card import Card
 
 
@@ -129,6 +130,29 @@ class Wallet(BaseModel):
         return cards
 
     def purchase(self, value):
+        # Raise RealLimitExceeded if purchase exceeds real_free_limit
         if self.real_free_limit < value:
             raise RealLimitExceeded()
 
+        purchase = Purchase()
+        purchase.total = value
+        purchase = purchase.set_wallet(self)
+
+        # If possible, purchase with only one card
+        for card in self.sorted_cards():
+            if card.free_limit >= value:
+                purchase = purchase.use_card(card, value)
+                return purchase
+
+        # Else, purchase with multiple cards
+        for card in self.sorted_cards():
+
+            value_in_card = value if card.free_limit > value else card.free_limit
+
+            purchase = purchase.use_card(card, value_in_card)
+            value -= value_in_card
+
+            if value <= 0:
+                break
+
+        return purchase
