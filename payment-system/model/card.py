@@ -9,7 +9,7 @@ from exceptions.card_exceptions import NotEnoughCardArguments, CardAlreadyActive
 from exceptions.card_exceptions import UnchangeableCardValue
 from exceptions.card_exceptions import NotEnoughCardFreeLimit
 from exceptions.card_exceptions import PaymentExceed
-from model.billing import BillingAction
+from model.billing import BillingAction, Payment
 
 
 class Card(BaseModel):
@@ -22,7 +22,7 @@ class Card(BaseModel):
 
     wallet = RelationshipFrom('.wallet.Wallet', 'CONTAINED_BY', cardinality=One)
     purchases = RelationshipFrom('.billing.Purchase', 'DID', model=BillingAction)
-    payments = RelationshipFrom('.billing.Payment', 'RECEIVED', model=BillingAction)
+    payments = RelationshipFrom('.billing.Payment', 'RECEIVED')
 
     def __init__(self, date_format='%m/%d/%Y', **kwargs):
         # Test if all arguments are present
@@ -196,6 +196,7 @@ class Card(BaseModel):
             raise CardIsInactive()
 
         self.decrease_free_limit(value)
+        self.save()
 
     def pay(self, value):
         """
@@ -204,7 +205,30 @@ class Card(BaseModel):
         :param value: payed amount
         :return: new free_limit
         """
-        self.increase_free_limit(value)
+        try:
+            self.increase_free_limit(value)
+            payment = Payment(value=value)
+            payment.save()
+
+            # Connect payment to card
+            payment.card.connect(self)
+            payment.save()
+
+            self.save()
+            self.payments.connect(payment)
+            self.save()
+
+            # Connect payment to wallet
+            self.wallet.single().save()
+            payment.wallet.connect(self.wallet.single())
+            self.wallet.single().payments.connect(payment)
+
+            payment.save()
+            self.wallet.single().save()
+
+            return payment
+        except Exception as e:
+            raise e
 
     def __lt__(self, other):
         """
