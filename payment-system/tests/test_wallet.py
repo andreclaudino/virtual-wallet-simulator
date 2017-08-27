@@ -24,7 +24,7 @@ class TestWallet(TestCase):
         self.wallet_uid = self.user.wallets[0].uid
 
     def tearDown(self):
-        self.user.wallets[0].delete()
+        self.wallet.delete()
         self.user.delete()
 
     def test_create_wallet_associated_with_user(self):
@@ -32,10 +32,7 @@ class TestWallet(TestCase):
         Create a Wallet in an User, then, test if it's correct
         associated
         """
-        self.assertEqual(len(self.user.wallets), 1)
-
         wallet = Wallet.nodes.get_or_none(uid=self.wallet_uid)
-
         self.assertEqual(self.user.wallets[0], wallet)
 
     def test_setting_real_limit_bigger_than_max_limit(self):
@@ -136,14 +133,14 @@ class TestWallet(TestCase):
         """
         Should remove deactivated cards on card sorting
         """
-        wallet = self.user.create_wallet("Testing wallet")
+        [_.delete() for _ in self.wallet.cards]
 
-        card2 = wallet.create_card(number='4539707916792445',
-                                        due_day=28,
+        card2 = self.wallet.create_card(number='4539707916792445',
+                                        due_day=15,
                                         expiration_date='05/25/2022',
                                         cvv='002',
                                         max_limit=300.0)
-        card1 = wallet.create_card(number='4539707916792445',
+        card1 = self.wallet.create_card(number='4539707916792445',
                                         due_day=20,
                                         expiration_date='05/25/2022',
                                         cvv='001',
@@ -151,46 +148,46 @@ class TestWallet(TestCase):
         card1.active = False
         card1.save()
 
-        card3_3 = wallet.create_card(number='4539707916792445',
+        card3_3 = self.wallet.create_card(number='4539707916792445',
                                           due_day=13,
                                           expiration_date='05/25/2022',
                                           cvv='005',
                                           max_limit=700.0)
-        card3_1 = wallet.create_card(number='4539707916792445',
+        card3_1 = self.wallet.create_card(number='4539707916792445',
                                           due_day=13,
                                           expiration_date='05/25/2022',
                                           cvv='003',
                                           max_limit=200.0)
-        card3_2 = wallet.create_card(number='4539707916792445',
-                                          due_day=25,
+        card3_2 = self.wallet.create_card(number='4539707916792445',
+                                          due_day=13,
                                           expiration_date='05/25/2022',
                                           cvv='004',
                                           max_limit=500.0)
+        card3_2.active = False
+        card3_2.save()
 
-        card4 = wallet.create_card(number='4539707916792445',
+        card4 = self.wallet.create_card(number='4539707916792445',
                                         due_day=10,
                                         expiration_date='05/25/2022',
                                         cvv='006',
                                         max_limit=300.0)
 
-        card5_1 = wallet.create_card(number='4539707916792445',
+        card5_1 = self.wallet.create_card(number='4539707916792445',
                                           due_day=3,
                                           expiration_date='05/25/2022',
                                           cvv='007',
                                           max_limit=200.0)
-        card5_1.active = False
-        card5_1.save()
-
-        card5_2 = wallet.create_card(number='4539707916792445',
+        card5_2 = self.wallet.create_card(number='4539707916792445',
                                           due_day=3,
                                           expiration_date='05/25/2022',
                                           cvv='008',
                                           max_limit=300.0)
 
-        for _ in wallet.cards:
+        for _ in self.wallet.cards:
             _.set_fake_today(fake_today='08/22/2017')
 
-        self.assertListEqual(wallet.sorted_cards(), [card3_1, card3_3, card4, card5_2, card2, card3_2])
+        self.assertListEqual(self.wallet.sorted_cards(), [card2, card3_1, card3_3, card4, card5_1,
+                                                          card5_2])
 
     def test_free_limit_setting_directly(self):
         """
