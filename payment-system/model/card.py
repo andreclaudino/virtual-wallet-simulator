@@ -5,10 +5,11 @@ from neomodel.properties import StringProperty, IntegerProperty, DateProperty, F
 from neomodel.relationship_manager import RelationshipFrom
 
 from base.base_model import BaseModel
-from exceptions.card_exception import NotEnoughCardArguments, CardAlreadyActive, CardAlreadyInactive, CardIsInactive
-from exceptions.card_exception import UnchangeableCardValue
-from exceptions.card_exception import NotEnoughCardFreeLimit
-from exceptions.card_exception import PaymentExceed
+from exceptions.card_exceptions import NotEnoughCardArguments, CardAlreadyActive, CardAlreadyInactive, CardIsInactive
+from exceptions.card_exceptions import UnchangeableCardValue
+from exceptions.card_exceptions import NotEnoughCardFreeLimit
+from exceptions.card_exceptions import PaymentExceed
+from model.billing import BillingAction
 
 
 class Card(BaseModel):
@@ -20,6 +21,8 @@ class Card(BaseModel):
     free_limit_ = FloatProperty(required=True)
 
     wallet = RelationshipFrom('.wallet.Wallet', 'CONTAINED_BY', cardinality=One)
+    purchases = RelationshipFrom('.billing.Purchase', 'DID', model=BillingAction)
+    payments = RelationshipFrom('.billing.Payment', 'RECEIVED', model=BillingAction)
 
     def __init__(self, date_format='%m/%d/%Y', **kwargs):
         # Test if all arguments are present
@@ -209,3 +212,10 @@ class Card(BaseModel):
             return self.max_limit < other.max_limit
         else:
             return False
+
+    def __str__(self):
+        s = '<Card[limit: {max_limit}, due_day: {due_day}, expiration: {expiration}, cvv: {cvv}]>'
+        return s.format(max_limit=self.max_limit,
+                        due_day=self.due_date,
+                        expiration=self.due_date,
+                        cvv=self.cvv)
