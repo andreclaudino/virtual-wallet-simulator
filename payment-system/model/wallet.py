@@ -123,8 +123,13 @@ class Wallet(BaseModel):
 
         return card
 
-    def sorted_cards(self):
-        cards = [card for card in self.cards if card.active]
+    def sorted_cards(self, fake_today=None, date_format='%m/%d/%Y'):
+        cards = []
+
+        for card in self.cards:
+            if card.active:
+                card.set_fake_today(fake_today, date_format)
+                cards.append(card)
 
         cards.sort()
         return cards

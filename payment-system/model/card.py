@@ -105,6 +105,13 @@ class Card(BaseModel):
 
     @property
     def active(self):
+        """
+        A card should be inactive if it's set to be inactive, or
+        if reached expiration date
+        :return:
+        """
+        if self.expiration_date < self.fake_today:
+            return False
         return self.active_
 
     @active.setter
@@ -214,8 +221,8 @@ class Card(BaseModel):
             return False
 
     def __str__(self):
-        s = '<Card[limit: {max_limit}, due_day: {due_day}, expiration: {expiration}, cvv: {cvv}]>'
+        s = '<Card[limit: {max_limit}, due_day: {due_date}, expiration: {expiration}, cvv: {cvv}]>'
         return s.format(max_limit=self.max_limit,
-                        due_day=self.due_date,
+                        due_date=self.due_date,
                         expiration=self.due_date,
                         cvv=self.cvv)
