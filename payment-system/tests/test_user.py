@@ -2,8 +2,12 @@ import hashlib
 from unittest import TestCase
 
 from base.connect_db import ConnectDB
-from exceptions.user_exception import UsernameInUse, UserInactive, UserPasswordNotGiven, UsernameNotGiven, \
-    UserPasswordIncorrect, UsernameNotFound
+from exceptions.user_exceptions import UsernameInUse
+from exceptions.user_exceptions import UserInactive
+from exceptions.user_exceptions import UserPasswordNotGiven
+from exceptions.user_exceptions import UsernameNotGiven
+from exceptions.user_exceptions import UserPasswordIncorrect
+from exceptions.user_exceptions import UsernameNotFound
 from model.user import User, factors
 
 

@@ -3,10 +3,10 @@ from unittest.case import TestCase
 import datetime
 
 from base.connect_db import ConnectDB
-from exceptions.card_exception import NotEnoughCardArguments, CardAlreadyInactive, CardAlreadyActive, CardIsInactive
-from exceptions.card_exception import NotEnoughCardFreeLimit
-from exceptions.card_exception import UnchangeableCardValue
-from exceptions.card_exception import PaymentExceed
+from exceptions.card_exceptions import NotEnoughCardArguments, CardAlreadyInactive, CardAlreadyActive, CardIsInactive
+from exceptions.card_exceptions import NotEnoughCardFreeLimit
+from exceptions.card_exceptions import UnchangeableCardValue
+from exceptions.card_exceptions import PaymentExceed
 from model.card import Card
 from model.user import User
 from datetime import datetime
@@ -154,11 +154,8 @@ class TestCard(TestCase):
                                           cvv='008',
                                           max_limit=300.0)
 
-        for _ in self.wallet.cards:
-            _.set_fake_today(fake_today='08/22/2017')
-
-        self.assertListEqual(self.wallet.sorted_cards(), [card1, card2, card3_1, card3_2, card3_3, card4, card5_1,
-                                                          card5_2])
+        self.assertListEqual(self.wallet.sorted_cards(fake_today='08/22/2017'),
+                             [card1, card2, card3_1, card3_2, card3_3, card4, card5_1, card5_2])
 
         for _ in self.wallet.cards:
             _.delete()
@@ -168,58 +165,58 @@ class TestCard(TestCase):
         Cards should be sorted firts descendently by due date,
         next ascendently by limit
         """
-
         [_.delete() for _ in self.wallet.cards]
 
         card2 = self.wallet.create_card(number='4539707916792445',
-                                        due_day=28,
+                                        due_day=15,
                                         expiration_date='05/25/2022',
-                                        cvv='002',
+                                        cvv='020',
                                         max_limit=300.0)
         card1 = self.wallet.create_card(number='4539707916792445',
                                         due_day=20,
                                         expiration_date='05/25/2022',
-                                        cvv='001',
+                                        cvv='010',
                                         max_limit=300.0)
 
         card3_3 = self.wallet.create_card(number='4539707916792445',
                                           due_day=13,
                                           expiration_date='05/25/2022',
-                                          cvv='005',
+                                          cvv='033',
                                           max_limit=700.0)
         card3_1 = self.wallet.create_card(number='4539707916792445',
                                           due_day=13,
                                           expiration_date='05/25/2022',
-                                          cvv='003',
+                                          cvv='031',
                                           max_limit=200.0)
         card3_2 = self.wallet.create_card(number='4539707916792445',
-                                          due_day=25,
+                                          due_day=13,
                                           expiration_date='05/25/2022',
-                                          cvv='004',
+                                          cvv='032',
                                           max_limit=500.0)
 
         card4 = self.wallet.create_card(number='4539707916792445',
                                         due_day=10,
                                         expiration_date='05/25/2022',
-                                        cvv='006',
+                                        cvv='040',
                                         max_limit=300.0)
 
         card5_1 = self.wallet.create_card(number='4539707916792445',
                                           due_day=3,
                                           expiration_date='05/25/2022',
-                                          cvv='007',
+                                          cvv='051',
                                           max_limit=200.0)
         card5_2 = self.wallet.create_card(number='4539707916792445',
                                           due_day=3,
                                           expiration_date='05/25/2022',
-                                          cvv='008',
+                                          cvv='052',
                                           max_limit=300.0)
 
-        for _ in self.wallet.cards:
-            _.set_fake_today(fake_today='08/22/2017')
+        for _ in self.wallet.sorted_cards(fake_today='08/14/2017'):
+            # Show sorting just for clarity
+            print(_.due_date, '|', _.max_limit, '|', _.cvv)
 
-        self.assertListEqual(self.wallet.sorted_cards(), [card1, card3_1, card3_3, card4, card5_1,
-                                                          card5_2, card2, card3_2])
+        self.assertListEqual(self.wallet.sorted_cards(fake_today='08/14/2017'),
+                             [card3_1, card3_2, card3_3, card4, card5_1, card5_2, card1, card2])
 
         for _ in self.wallet.cards:
             _.delete()
@@ -438,5 +435,11 @@ class TestCard(TestCase):
         with self.assertRaises(CardIsInactive):
             self.card.purchase(100.0)
 
-    def test_bill_generation(self):
-        pass
+    def test_card_is_inactive_after_expiration(self):
+        """
+        Should get inactive for a card after expiration date
+        """
+        self.assertTrue(self.card.active)
+
+        self.card.set_fake_today(fake_today='05/26/2022')
+        self.assertFalse(self.card.active)

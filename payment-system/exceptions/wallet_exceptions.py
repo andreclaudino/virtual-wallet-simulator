@@ -32,3 +32,12 @@ class UnchangeableWalletValue(WalletException):
     def __init__(self, message="This value can not be changed directly", *args, **kwargs):
         super(WalletException, self).__init__(message, *args, **kwargs)
         self.message = message
+
+
+class RealLimitExceeded(WalletException):
+    """
+    raised when real limit is exceeded in a purchase
+    """
+    def __init__(self, message="Real limit exceed", *args, **kwargs):
+        super(WalletException, self).__init__(message, *args, **kwargs)
+        self.message = message

@@ -5,18 +5,16 @@ useful functions for it
 import hashlib
 import math
 
-from neomodel.cardinality import One, OneOrMore
 from neomodel.properties import StringProperty, EmailProperty
 from neomodel.relationship_manager import RelationshipTo
-from pip._vendor.pyparsing import ZeroOrMore
 
 from base.base_model import BaseModel
-from exceptions.user_exception import UsernameInUse
-from exceptions.user_exception import UserInactive
-from exceptions.user_exception import UserPasswordNotGiven
-from exceptions.user_exception import UsernameNotGiven
-from exceptions.user_exception import UserPasswordIncorrect
-from exceptions.user_exception import UsernameNotFound
+from exceptions.user_exceptions import UsernameInUse
+from exceptions.user_exceptions import UserInactive
+from exceptions.user_exceptions import UserPasswordNotGiven
+from exceptions.user_exceptions import UsernameNotGiven
+from exceptions.user_exceptions import UserPasswordIncorrect
+from exceptions.user_exceptions import UsernameNotFound
 from model.wallet import Wallet
 
 
@@ -54,6 +52,14 @@ class User(BaseModel):
         of clean one
         """
         self.password_ = mixture_pwd(self.uid, value)
+
+    @property
+    def active(self):
+        return self.active_
+
+    @active.setter
+    def active(self, state):
+        self.active_ = state
 
     def save(self):
         """

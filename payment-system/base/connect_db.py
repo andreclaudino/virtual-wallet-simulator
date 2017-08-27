@@ -1,11 +1,6 @@
 import json
 import neomodel.config
 
-"""
-ConnectDB:
-created by André Claudino <claudino@d2x.com.br>
-"""
-
 class ConnectDB:
     """
     ConnectDB:
@@ -26,7 +21,6 @@ class ConnectDB:
     def connect_database():
         """
         Estabilish connection to Neo4J database based on configuration file
-        :return: None
         """
         file_config = ConnectDB.load_default_config()
         neomodel.config.DATABASE_URL =\
