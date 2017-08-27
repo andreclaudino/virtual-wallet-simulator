@@ -53,5 +53,6 @@ class Purchase(BaseModel):
 
 
 class Payment(BaseModel):
-    cards = RelationshipTo('.card.Card', 'FOR', model=BillingAction, cardinality=One)
+    value = FloatProperty()
+    card = RelationshipTo('.card.Card', 'FOR', cardinality=One)
     wallet = RelationshipFrom('.wallet.Wallet', 'FOR', cardinality=One)
