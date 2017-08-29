@@ -3,6 +3,8 @@ from exceptions.user_exceptions import UsernameInUse
 from model.user import User
 from flask import request
 
+from utils.authorize import authenticated
+
 user_blueprint = BaseController('user')
 
 
@@ -21,7 +23,7 @@ def create():
         user.save()
         user.refresh()
 
-        user.create_wallet("Wallte of {}".format(user.name))
+        user.create_wallet("Wallet of {}".format(user.name))
         user.save()
 
         user.refresh()
@@ -35,7 +37,9 @@ def create():
         return dict(error=str(e)), 500
 
 @user_blueprint.route('/<uid>', methods=['GET'])
-def get(uid):
+@authenticated
+def get(uid, contents=None):
+
     user = User.nodes.get_or_none(uid=uid)
 
     if user:
@@ -44,7 +48,8 @@ def get(uid):
         return dict(error='User not found'), 404
 
 @user_blueprint.route('/username/<username>', methods=['GET'])
-def get_by_username(username):
+@authenticated
+def get_by_username(username, contents=None):
     user = User.nodes.get_or_none(username=username)
 
     if user:
