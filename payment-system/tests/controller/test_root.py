@@ -38,7 +38,6 @@ class RootTest(TestCase):
         if user:
             user.delete()
 
-
     def test_login_correct(self):
         """
         Test if login with correct credentials return
@@ -50,7 +49,7 @@ class RootTest(TestCase):
                                data=dict(username=self.username, password=self.password),
                                follow_redirects=True)
         data = json.loads(result.get_data(as_text=True))
-
+        
         # Test login
         self.assertEqual(result.status_code, 200)
         self.assertEqual(data['user']['username'], self.username)
@@ -107,3 +106,45 @@ class RootTest(TestCase):
         # Test login
         self.assertEqual(result.status_code, 401)
         self.assertEqual(data['error'], str(UserInactive()))
+
+    def test_verify_token(self):
+        """
+        Should return information about a token:
+        username, user id (uid), and wallet id
+        (wid), because token is valid
+        """
+
+        # Login user and get token
+        result = self.app.post('/login',
+                               data=dict(username=self.username, password=self.password),
+                               follow_redirects=True)
+
+        data = json.loads(result.get_data(as_text=True))
+        username = data['user']['username']
+        uid = data['user']['uid']
+        wid = data['user']['wid']
+        token = data['token']
+
+        result = self.app.get('/whoami', headers=dict(token=token), follow_redirects=True)
+        data = json.loads(result.get_data(as_text=True))
+
+        self.assertEqual(username, data['username'])
+        self.assertEqual(uid, data['uid'])
+        self.assertEqual(wid, data['wid'])
+
+    def test_verify_incorrect_token(self):
+        """
+        Should fail because token is invalid
+        """
+
+        # Login user and get token
+        result = self.app.post('/login',
+                               data=dict(username=self.username, password=self.password),
+                               follow_redirects=True)
+
+        data = json.loads(result.get_data(as_text=True))
+        token = data['token']
+
+        result = self.app.get('/whoami', headers=dict(token='000000'), follow_redirects=True)
+
+        self.assertEqual(result.status_code, 401)
