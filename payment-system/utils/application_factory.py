@@ -11,9 +11,5 @@ def create_app():
     app.register_blueprint(user_blueprint, url_prefix='/user')
     app.register_blueprint(root_blueprint, url_prefix='')
 
-    # V1 Api
-    app.register_blueprint(user_blueprint, url_prefix='/v1/user')
-    app.register_blueprint(root_blueprint, url_prefix='/v1')
-
 
     return app
