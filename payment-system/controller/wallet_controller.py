@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from flask.globals import request
 from neomodel.exception import DoesNotExist
 
@@ -92,6 +93,17 @@ def get_cards(contents=None):
     except Exception as e:
         return dict(error=str(e)), 500
 
+@wallet_blueprint.route('/cards/sorted', methods=['GET'])
+@authenticated
+def get_sorted_cards(contents=None):
+    try:
+        wallet = Wallet.nodes.get(uid=contents['wid'])
+        cards = [card.to_dict() for card in wallet.sorted_cards()]
+
+        return dict(wid=wallet.uid, cards=cards)
+    except Exception as e:
+        return dict(error=str(e)), 500
+
 @wallet_blueprint.route('/cards/<cid>', methods=['GET'])
 @authenticated
 def get_card(cid=None, contents=None):
@@ -108,6 +120,7 @@ def get_card(cid=None, contents=None):
         return dict(error=str(e)), 500
 
 
+@wallet_blueprint.route('/purchase', methods=['POST'])
 @wallet_blueprint.route('/purchase/<float:value>', methods=['POST'])
 @authenticated
 def purchase(value=None, contents=None):
@@ -115,8 +128,9 @@ def purchase(value=None, contents=None):
     Do a purchase in wallet
     """
     try:
+        value = value if value else request.values['value']
         wallet = Wallet.nodes.get(uid=contents['wid'])
-        purchase_obj = wallet.purchase(value)
+        purchase_obj = wallet.purchase(float(value))
         return purchase_obj.to_dict()
 
     except DoesNotExist as e:
@@ -150,8 +164,3 @@ def pay_card(cid=None, contents=None):
     except Exception as e:
         return dict(error=str(e)), 500
 
-# NOTE: low-priority
-@wallet_blueprint.route('/events/<since>/<until>', methods=['GET'])
-@authenticated
-def events(since=None, until=None, cid=None, contents=None):
-    pass
