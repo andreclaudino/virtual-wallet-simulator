@@ -73,11 +73,12 @@ class Purchase(BaseModel):
 
 class Payment(BaseModel):
     value = FloatProperty()
+    date_time = DateTimeProperty(default_now=True)
     card = RelationshipTo('.card.Card', 'FOR', cardinality=One)
     wallet = RelationshipFrom('.wallet.Wallet', 'FOR', cardinality=One)
 
     def to_dict(self):
         return dict(value=self.value,
                     cid=self.card.single().uid,
+                    date_time=self.date_time,
                     wid=self.wallet.single().uid)
-
