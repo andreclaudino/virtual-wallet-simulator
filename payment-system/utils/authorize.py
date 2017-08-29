@@ -17,7 +17,8 @@ def server_config():
                     'host': '0.0.0.0',
                     'debug': True
                 },
-                'secret_key': '0000000000000'
+                'secret_key': '0000000000000',
+                'expiration_time': 600
                }
 
     # load server configuration
@@ -26,16 +27,23 @@ def server_config():
             return json.load(f)
     except FileNotFoundError as e:
         # if file not found, return defaults and raise warn
-        warnings.warn("File 'server_config.json' not found in running directory")
+        #warnings.warn("File 'server_config.json' not found in running directory")
         return defaults
     except ValueError as e:
         # if file found, but has problem in parse, raise exception
         print("Error parsing 'server_config.json': {}".format(e))
 
-def generate_auth_token(username, uid, expires=600):
-    SECRET_KEY = server_config()['secret_key']
-    serializer = TimedJSONWebSignatureSerializer(SECRET_KEY, expires_in=expires)
-    return serializer.dumps(username, uid)
+def generate_auth_token(user):
+
+    username = user.username
+    uid = user.uid
+    wid = user.wallet_uid()
+
+    secret_key = server_config()['secret_key']
+    expires = server_config()['expiration_time']
+    serializer = TimedJSONWebSignatureSerializer(secret_key, expires_in=expires)
+
+    return serializer.dumps([username, uid, wid])
 
 
 def read_auth_token(token):
@@ -47,9 +55,11 @@ def read_auth_token(token):
         * SignatureExpired: token is valid, but expired
         * BadSignature: token is not valid
     """
-    SECRET_KEY = server_config()['secret_key']
-    serializer = TimedJSONWebSignatureSerializer(SECRET_KEY)
+    secret_key = server_config()['secret_key']
+    expires = server_config()['expiration_time']
+    serializer = TimedJSONWebSignatureSerializer(secret_key, expires_in=expires)
     return serializer.loads(token)
+
 
 def verify_token(token):
     try:
