@@ -68,8 +68,6 @@ class Wallet(BaseModel):
         """
         Increase free_limit of wallet, usually
         in card bill payments.
-        Raises an exception if new free_limit
-        become negative
         :param value: amount to be increased
         :return: new free limit
         """

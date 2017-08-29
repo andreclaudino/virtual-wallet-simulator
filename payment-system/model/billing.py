@@ -6,9 +6,11 @@ from neomodel.relationship_manager import RelationshipTo, RelationshipFrom
 from base.base_model import BaseModel
 from exceptions.purchase_exceptions import PurchaseUnchangeableProperty
 
+
 class BillingAction(StructuredRel):
     value = FloatProperty(required=True)
     date_time = DateTimeProperty(default_now=True)
+
 
 class Purchase(BaseModel):
     total = FloatProperty(required=True)
@@ -42,6 +44,23 @@ class Purchase(BaseModel):
 
         return self
 
+    def to_dict(self):
+        card_relations = []
+
+        for card in self.cards:
+            relation = dict()
+            relation['cid'] = card.uid
+
+            rel = self.cards.relationship(card)
+            relation['value'] = rel.value
+            relation['date_time'] = rel.date_time
+
+            card_relations.append(relation)
+
+        return dict(wid=self.wallet.single().uid,
+                    total=self.total,
+                    relations=relation)
+
     def set_wallet(self, wallet):
         self.save()
         self.wallet_.connect(wallet)
@@ -56,3 +75,9 @@ class Payment(BaseModel):
     value = FloatProperty()
     card = RelationshipTo('.card.Card', 'FOR', cardinality=One)
     wallet = RelationshipFrom('.wallet.Wallet', 'FOR', cardinality=One)
+
+    def to_dict(self):
+        return dict(value=self.value,
+                    cid=self.card.single().uid,
+                    wid=self.wallet.single().uid)
+
