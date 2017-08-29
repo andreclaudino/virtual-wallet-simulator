@@ -21,7 +21,7 @@ class RootTest(TestCase):
 
         self.arguments = dict(name='Testing User',
                          username=self.username,
-                         adress='0, Dummy Street, 219875-456',
+                         address='0, Dummy Street, 219875-456',
                          phone_number='+55 21 99999-999',
                          mail_address='test@test_users.com',
                          password=self.password)
