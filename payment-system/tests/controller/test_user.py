@@ -29,6 +29,7 @@ class UserTest(TestCase):
         # Delete object
         user = User.nodes.get_or_none(username=self.username)
         if user:
+            user.wallets.single().delete()
             user.delete()
 
     def test_create_user(self):

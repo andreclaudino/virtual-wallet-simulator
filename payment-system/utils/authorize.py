@@ -19,7 +19,7 @@ def server_config():
                     'debug': True
                 },
                 'secret_key': '0000000000000',
-                'expiration_time': 600
+                'expiration_time': 3600
                }
 
     # load server configuration
@@ -51,7 +51,7 @@ def read_auth_token(token):
     """
     Decode a token and get username and uid
     :param token: auth_token
-    :return: username, uid
+    :return: username, user uid, wallet uid
     :raise:
         * SignatureExpired: token is valid, but expired
         * BadSignature: token is not valid
