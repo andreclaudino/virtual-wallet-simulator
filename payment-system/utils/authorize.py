@@ -1,7 +1,8 @@
-import warnings
+from functools import wraps
 
 from flask import json
-from itsdangerous import TimedJSONWebSignatureSerializer
+from flask import request
+from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadSignature
 
 
 def server_config():
@@ -69,3 +70,31 @@ def verify_token(token):
             return False
     except:
         return False
+
+
+def authenticated(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # get token, if exist
+        token = request.headers.get('token')
+
+        # if token is falsy, return error
+        if not token:
+            return dict(error="No token given"), 401
+        try:
+
+            token = request.headers['token']
+            username, uid, wid = read_auth_token(token)
+
+            # Wrap contents of token in a dict and pass to function
+            contents = dict(username=username, uid=uid, wid=wid)
+            return f(contents=contents, *args, **kwargs)
+
+        except SignatureExpired as e:
+            return dict(error=str(e)), 401
+        except BadSignature as e:
+            return dict(error=str(e)), 401
+        except Exception as e:
+            return dict(error=str(e)), 500
+
+    return decorated
