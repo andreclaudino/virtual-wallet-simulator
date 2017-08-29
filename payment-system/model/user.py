@@ -36,6 +36,19 @@ class User(BaseModel):
     # Relationships
     wallets = RelationshipTo('.wallet.Wallet', 'OWN')
 
+    def wallet_uid(self):
+        if self.wallets.single():
+            return self.wallets.single().uid
+        return None
+
+    def to_dict(self):
+        return dict(name=self.name,
+                    username=self.username,
+                    uid=self.uid,
+                    mail_address=self.mail_address,
+                    active=self.active,
+                    wid=self.wallet_uid())
+
     @property
     def password(self):
         """
@@ -99,7 +112,6 @@ class User(BaseModel):
         wallet.save()
 
         return wallet
-
 
     @staticmethod
     def login(username, passwd):

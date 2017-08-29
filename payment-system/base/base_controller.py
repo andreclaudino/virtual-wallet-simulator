@@ -3,7 +3,7 @@ BaseController
 
 this module contains the BaseController class. This class
 is a base wrapper of Flask Blueprint, making it easier to
-modularize endpoints
+modularize endpoints and avoiding repeating configurations
 """
 
 from flask import Blueprint
@@ -13,10 +13,7 @@ class BaseController(Blueprint):
 
     def __init__(self, name=__name__, **kwargs):
         """
-        Bind controller to application with specified preffix.
-        :param app: application
-        :param preffix: preffix
-        :param kwargs: parameters for app.register_blueprint than preffix
+        Simple Blueprint with some configurations
         """
 
         super().__init__(name, name, **kwargs)
