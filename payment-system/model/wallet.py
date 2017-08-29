@@ -35,9 +35,10 @@ class Wallet(BaseModel):
         if value > self.max_limit:
             raise WalletLimitExceed()
         elif value < 0:
-            raise WalletLimitNotAllowed
+            raise WalletLimitNotAllowed()
         else:
             self.real_limit_ = value
+        self.save()
 
     @property
     def max_limit(self):
@@ -67,8 +68,6 @@ class Wallet(BaseModel):
         """
         Increase free_limit of wallet, usually
         in card bill payments.
-        Raises an exception if new free_limit
-        become negative
         :param value: amount to be increased
         :return: new free limit
         """
@@ -133,6 +132,14 @@ class Wallet(BaseModel):
 
         cards.sort()
         return cards
+
+    def to_dict(self):
+        return dict(real_limit=self.real_limit,
+                    max_limit=self.max_limit,
+                    free_limit=self.free_limit,
+                    real_free_limit=self.real_free_limit,
+                    total_used=self.total_used,
+                    total_cards=len(self.cards))
 
     def purchase(self, value):
         # Raise RealLimitExceeded if purchase exceeds real_free_limit
