@@ -19,7 +19,7 @@ def server_config():
                     'debug': True
                 },
                 'secret_key': '0000000000000',
-                'expiration_time': 600
+                'expiration_time': 3600
                }
 
     # load server configuration
