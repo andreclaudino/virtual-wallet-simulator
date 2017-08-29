@@ -230,6 +230,14 @@ class Card(BaseModel):
         except Exception as e:
             raise e
 
+    def to_dict(self):
+        return dict(uid=self.uid,
+                    due_date=self.due_date,
+                    expiration_date=self.expiration_date,
+                    max_limit=self.max_limit,
+                    free_limit=self.free_limit,
+                    active=self.active)
+
     def __lt__(self, other):
         """
         Order cards, first by largest due date,
