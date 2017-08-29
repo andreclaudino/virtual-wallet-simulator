@@ -2,8 +2,8 @@ from flask.globals import request
 from neomodel.exception import DoesNotExist
 
 from base.base_controller import BaseController
-from exceptions.card_exceptions import NotEnoughCardArguments
-from exceptions.wallet_exceptions import WalletLimitExceed, WalletLimitNotAllowed
+from exceptions.card_exceptions import NotEnoughCardArguments, PaymentExceed
+from exceptions.wallet_exceptions import WalletLimitExceed, WalletLimitNotAllowed, RealLimitExceeded
 from model.card import Card
 from model.wallet import Wallet
 from utils.authorize import authenticated
@@ -108,21 +108,47 @@ def get_card(cid=None, contents=None):
         return dict(error=str(e)), 500
 
 
-@wallet_blueprint.route('/cards/<cid>/pay/<float:value>', methods=['PUT'])
+@wallet_blueprint.route('/purchase/<float:value>', methods=['POST'])
 @authenticated
 def purchase(value=None, contents=None):
     """
     Do a purchase in wallet
     """
+    try:
+        wallet = Wallet.nodes.get(uid=contents['wid'])
+        purchase_obj = wallet.purchase(value)
+        return purchase_obj.to_dict()
 
+    except DoesNotExist as e:
+        return dict(error=str(e)), 404
+    except RealLimitExceeded as e:
+        return dict(error=str(e)), 406
+    except WalletLimitNotAllowed as e:
+        return dict(error=str(e)), 406
+    except Exception as e:
+        return dict(error=str(e)), 500
 
-@wallet_blueprint.route('/cards/<cid>/pay/<float:value>', methods=['PUT'])
+@wallet_blueprint.route('/cards/pay', methods=['POST'])
+@wallet_blueprint.route('/cards/<cid>/pay', methods=['POST'])
 @authenticated
-def pay_card(cid=None, value=None, contents=None):
+def pay_card(cid=None, contents=None):
     """
     Pay an amount in a card
     """
-    pass
+    try:
+        cid = cid if cid else request.values['cid']
+        value = float(request.values['value'])
+
+        card = Card.nodes.get(uid=cid)
+        pay_object = card.pay(value)
+        return pay_object.to_dict()
+
+    except DoesNotExist as e:
+        return dict(error=str(e)), 404
+    except PaymentExceed as e:
+        return dict(error=str(e)), 406
+    except Exception as e:
+        return dict(error=str(e)), 500
 
 # NOTE: low-priority
 @wallet_blueprint.route('/events/<since>/<until>', methods=['GET'])
