@@ -21,7 +21,7 @@ def create():
         user.save()
         user.refresh()
 
-        user.create_wallet("Wallte of {}".format(user.name))
+        user.create_wallet("Wallet of {}".format(user.name))
         user.save()
 
         user.refresh()
