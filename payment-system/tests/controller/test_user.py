@@ -76,8 +76,15 @@ class UserTest(TestCase):
         data = json.loads(result.get_data(as_text=True))
         uid = data['uid']
 
-        result = self.app.get('/user/{}'.format(uid), follow_redirects=True)
+        result = self.app.post('/login', data=dict(username=self.username, password=self.password),
+                      follow_redirects=True)
+        data = json.loads(result.get_data(as_text=True))
+        token = data['token']
 
+        result = self.app.get('/user/{}'.format(uid), headers=dict(token=token),
+                              follow_redirects=True)
+
+        print(result.data)
         self.assertEqual(result.status_code, 200)
         user = User.nodes.get_or_none(uid=uid)
 
@@ -87,9 +94,18 @@ class UserTest(TestCase):
         """
         Should get 404 on user not found by id
         """
-        uid = 0
+        # First creation should be ok returning created status (201)
+        self.app.post('/user', data=self.arguments, follow_redirects=True)
 
-        result = self.app.get('/user/{}'.format(uid), follow_redirects=True)
+        uid = 0
+        result = self.app.post('/login', data=dict(username=self.username, password=self.password),
+                               follow_redirects=True)
+
+        data = json.loads(result.get_data(as_text=True))
+        token = data['token']
+
+        result = self.app.get('/user/{}'.format(uid), headers=dict(token=token),
+                              follow_redirects=True)
 
         self.assertEqual(result.status_code, 404)
         user = User.nodes.get_or_none(uid=uid)
