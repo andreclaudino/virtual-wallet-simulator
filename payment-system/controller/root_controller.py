@@ -2,7 +2,9 @@ from flask import request
 from itsdangerous import SignatureExpired, BadSignature
 
 from base.base_controller import BaseController
-from exceptions.user_exceptions import UsernameNotFound, UserPasswordIncorrect, UserInactive
+from exceptions.user_exceptions import UsernameNotFound
+from exceptions.user_exceptions import UserPasswordIncorrect
+from exceptions.user_exceptions import UserInactive
 from model.user import User
 from utils.authorize import generate_auth_token, read_auth_token
 

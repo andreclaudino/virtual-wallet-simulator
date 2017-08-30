@@ -12,9 +12,6 @@ user_blueprint = BaseController('user')
 def create():
 
     form = request.values
-    print(request.headers)
-    print(request.form)
-    print(request.args)
 
     try:
         user = User(name=form['name'],
