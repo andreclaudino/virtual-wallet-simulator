@@ -47,6 +47,8 @@ For more information and next steps in neo4j configuration read [this documentat
 ## Certificates
 System is made for SSL, so, this needs SSL certificates. You could use self-signed certificates for testing/development purposes. Certificates pair should be names cert.pem and key.pem, you could find information on how to generate these certificates on **Self-Signed Certificates* section of [this link ](https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https).
 
+HTTPS will be used only when *server.py* **is the main file**, this is not the case when running using ``flask run``.
+
 On unix shell, it basically consists in running:
 
 ```SHELL
@@ -92,3 +94,25 @@ This file has three primary fields:
    "expiration_time": 3600
 }
 ```
+
+## Execution:
+
+Once environment is prepared next step is run the application, running the application as standalone server (for development purposes) is simple. In running directory (where configuration files and cloned/unziped repository is) just execute:
+
+```SHELL
+python3 virtual-wallet-simulator/server.py
+```
+
+or tu run as flask application
+
+```
+SHELL
+FLASK_APP='virtual-wallet-simulator/server.py' flask run
+```
+
+To execute in a WSGI container you should take a look at your container documentation.
+
+## Tests and documentation:
+
+* Documentation was generated using [Pycco](https://pycco-docs.github.io/pycco/). Follow instructions to generate documentation of files you need.
+* Tests are done with basic python *unittest*, the only requirement is: as the application, tests should be ran from *running directory*
