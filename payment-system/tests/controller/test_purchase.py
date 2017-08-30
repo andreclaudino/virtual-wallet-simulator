@@ -21,11 +21,11 @@ class PurchaseTest(TestCase):
         self.username = 'test01'
 
         arguments = dict(name='Testing User',
-                              username=self.username,
-                              adress='0, Dummy Street, 219875-456',
-                              phone_number='+55 21 99999-999',
-                              mail_address='test@test_users.com',
-                              password=self.password)
+                         username=self.username,
+                         address='0, Dummy Street, 219875-456',
+                         phone_number='+55 21 99999-999',
+                         mail_address='test@test_users.com',
+                         password=self.password)
 
         self.app.post('/user', data=arguments, follow_redirects=True)
 

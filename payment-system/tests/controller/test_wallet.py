@@ -20,7 +20,7 @@ class WalletTest(TestCase):
 
         arguments = dict(name='Testing User',
                               username=self.username,
-                              adress='0, Dummy Street, 219875-456',
+                              address='0, Dummy Street, 219875-456',
                               phone_number='+55 21 99999-999',
                               mail_address='test@test_users.com',
                               password=self.password)
@@ -84,7 +84,8 @@ class WalletTest(TestCase):
 
     def test_manage_of_cards_in_a_wallet(self):
         """
-        Manage inserting, deactivating and fetching cardsw
+        Manage inserting, deactivating and fetching cards
+
         * Add some cards
         * Assert inserted cards
 
