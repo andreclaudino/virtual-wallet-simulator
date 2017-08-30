@@ -44,7 +44,7 @@ Go to [neo4j admin page](http://0.0.0.0:7474/browser/) and change default passwo
 For more information and next steps in neo4j configuration read [this documentation](https://neo4j.com/docs/operations-manual/current/installation/docker/) on neo4j page.
 
 
-## Certificates
+## Certificates (for standalone only)
 System is made for SSL, so, this needs SSL certificates. You could use self-signed certificates for testing/development purposes. Certificates pair should be names cert.pem and key.pem, you could find information on how to generate these certificates on **Self-Signed Certificates* section of [this link ](https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https).
 
 HTTPS will be used only when *server.py* **is the main file**, this is not the case when running using ``flask run``.
@@ -57,7 +57,7 @@ openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 36
 
 this will generate files **cert.pem** and **key.pem**, these should be placed in our **running directory**.
 
-## Configuration files:
+## Configuration files (standalone only)
 The system uses some configuration files (they should be put in root directory too), these files are:
 
 ### db_credentials.json
@@ -95,7 +95,7 @@ This file has three primary fields:
 }
 ```
 
-## Execution:
+### Standalone Execution:
 
 Once environment is prepared next step is run the application, running the application as standalone server (for development purposes) is simple. In running directory (where configuration files and cloned/unziped repository is) just execute:
 
@@ -103,14 +103,29 @@ Once environment is prepared next step is run the application, running the appli
 python3 virtual-wallet-simulator/server.py
 ```
 
-or tu run as flask application
+or to run as flask application
 
 ```
 SHELL
 FLASK_APP='virtual-wallet-simulator/server.py' flask run
 ```
+## Execution in a container
+To permit easy execution in containers and services like Heroku (the testing platfom), configuration files have to be changed to enviroment variables, they are:
 
-To execute in a WSGI container you should take a look at your container documentation.
+* EXPIRATION_TIME: token expiration time
+* EXPIRATION_TIME: token secret key
+
+Other variables are used for database connection, in this method, only bolt protocol is possible. When using GrapheneDB Heroku add on these variables will be defined automaticlly, if not, they are:
+
+* GRAPHENEDB_BOLT_PASSWORD: neo4j user password
+* GRAPHENEDB_BOLT_USER: neo4j username
+* GRAPHENEDB_BOLT_USER: neo4j database host + port withou protocol, it is: ``server:port`` instead of ``bolt://server:port``
+
+with these, using gunicorn would be simple as:
+
+```SHELL
+web: gunicorn --pythonpath payment-system server_wsgi:app --worker-class gevent -b 0.0.0.0:$PORT
+```
 
 ## Tests and documentation:
 
