@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>test_purchase.py</title>
+  <link rel="stylesheet" href="../../../pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>test_purchase.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">unittest.case</span> <span class="kn">import</span> <span class="n">TestCase</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">json</span>
+
+<span class="kn">from</span> <span class="nn">model.user</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">utils.application_factory</span> <span class="kn">import</span> <span class="n">create_app</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>Tests for purchase and payment</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">PurchaseTest</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">test_client</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">testing</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="s1">&#39;v3ry_h@rd_p@$$w0rd&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="s1">&#39;test01&#39;</span>
+
+        <span class="n">arguments</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Testing User&#39;</span><span class="p">,</span>
+                         <span class="n">username</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                         <span class="n">address</span><span class="o">=</span><span class="s1">&#39;0, Dummy Street, 219875-456&#39;</span><span class="p">,</span>
+                         <span class="n">phone_number</span><span class="o">=</span><span class="s1">&#39;+55 21 99999-999&#39;</span><span class="p">,</span>
+                         <span class="n">mail_address</span><span class="o">=</span><span class="s1">&#39;test@test_users.com&#39;</span><span class="p">,</span>
+                         <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/user&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arguments</span><span class="p">,</span> <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/login&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">),</span>
+                               <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">as_text</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;token&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">card_arguments</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="s1">&#39;00000000000000000000&#39;</span><span class="p">,</span>
+                                   <span class="n">expiration_date</span><span class="o">=</span><span class="s1">&#39;11/18/2068&#39;</span><span class="p">,</span>
+                                   <span class="n">cvv</span><span class="o">=</span><span class="s1">&#39;000&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <h1>Add some cards to the wallet</h1>
+<p>Card 1</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/wallet/cards&#39;</span><span class="p">,</span>
+                      <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">card_arguments</span><span class="p">,</span>
+                            <span class="s1">&#39;due_day&#39;</span><span class="p">:</span> <span class="mi">27</span><span class="p">,</span>
+                            <span class="s1">&#39;max_limit&#39;</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">},</span>
+                      <span class="n">headers</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">),</span> <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>Card 2</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/wallet/cards&#39;</span><span class="p">,</span>
+                      <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">card_arguments</span><span class="p">,</span>
+                            <span class="s1">&#39;due_day&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+                            <span class="s1">&#39;max_limit&#39;</span><span class="p">:</span> <span class="mf">2000.0</span><span class="p">},</span>
+                      <span class="n">headers</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">),</span> <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <p>Card 3</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/wallet/cards&#39;</span><span class="p">,</span>
+                      <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">card_arguments</span><span class="p">,</span>
+                            <span class="s1">&#39;due_day&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                            <span class="s1">&#39;max_limit&#39;</span><span class="p">:</span> <span class="mf">500.0</span><span class="p">},</span>
+                      <span class="n">headers</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">),</span> <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <p>Delete object</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get_or_none</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+            <span class="n">cards</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">wallets</span><span class="o">.</span><span class="n">single</span><span class="p">()</span><span class="o">.</span><span class="n">cards</span>
+
+            <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="n">cards</span><span class="p">:</span>
+                <span class="n">card</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+
+            <span class="n">user</span><span class="o">.</span><span class="n">wallets</span><span class="o">.</span><span class="n">single</span><span class="p">()</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>Purchase in a wallet</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">test_purchase</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      <p>First purchase</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">value</span> <span class="o">=</span> <span class="mf">100.0</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      <p>Do a purchase</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/wallet/purchase/{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">headers</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">),</span>
+                               <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">purchase</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">as_text</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>Assert purchase value</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">purchase</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">])</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p>Second purchase</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">value</span> <span class="o">=</span> <span class="mf">1300.0</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>Do a purchase</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/wallet/purchase/{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">headers</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">),</span>
+                               <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">purchase</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">as_text</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      <p>Assert purchase value</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">purchase</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">])</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      <p>pay an amount in card and get pay object</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">test_pay_card</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      <p>Do a purchase</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">value</span> <span class="o">=</span> <span class="mf">1300.0</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/wallet/purchase/{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">headers</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">),</span>
+                               <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">purchase</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">as_text</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      <p>Assert purchase value</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">purchase</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">])</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      <p>get one of used cards</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">cid0</span> <span class="o">=</span> <span class="n">purchase</span><span class="p">[</span><span class="s1">&#39;relations&#39;</span><span class="p">][</span><span class="s1">&#39;cid&#39;</span><span class="p">]</span>
+        <span class="n">value0</span> <span class="o">=</span> <span class="n">purchase</span><span class="p">[</span><span class="s1">&#39;relations&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/wallet/cards/{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cid0</span><span class="p">),</span> <span class="n">headers</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">),</span>
+                               <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">card0</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">as_text</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-21'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-21'>#</a>
+      </div>
+      <p>Test if card free limit was correct affected</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">card0</span><span class="p">[</span><span class="s1">&#39;free_limit&#39;</span><span class="p">],</span> <span class="n">card0</span><span class="p">[</span><span class="s1">&#39;max_limit&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">value</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-22'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-22'>#</a>
+      </div>
+      <p>Perform a payment</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">payed_value</span> <span class="o">=</span> <span class="mf">50.0</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/wallet/cards/{cid}/pay&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cid</span><span class="o">=</span><span class="n">cid0</span><span class="p">),</span>
+                              <span class="n">data</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">payed_value</span><span class="p">),</span>
+                              <span class="n">headers</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">),</span>
+                              <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pay</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">as_text</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-23'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-23'>#</a>
+      </div>
+      <p>get card updated</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/wallet/cards/{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cid0</span><span class="p">),</span> <span class="n">headers</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">),</span>
+                              <span class="n">follow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">card0</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">as_text</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">card0</span><span class="p">[</span><span class="s1">&#39;free_limit&#39;</span><span class="p">],</span> <span class="n">card0</span><span class="p">[</span><span class="s1">&#39;max_limit&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">value0</span> <span class="o">+</span> <span class="n">payed_value</span><span class="p">)</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

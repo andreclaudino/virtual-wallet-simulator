@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>user_controller.py</title>
+  <link rel="stylesheet" href="../../pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>user_controller.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">base.base_controller</span> <span class="kn">import</span> <span class="n">BaseController</span>
+<span class="kn">from</span> <span class="nn">exceptions.user_exceptions</span> <span class="kn">import</span> <span class="n">UsernameInUse</span>
+<span class="kn">from</span> <span class="nn">model.user</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">request</span>
+<span class="kn">from</span> <span class="nn">utils.authorize</span> <span class="kn">import</span> <span class="n">authenticated</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>=== User route module ===</p>
+<p>This module deals with user creation and
+other user data colelcting</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">user_blueprint</span> <span class="o">=</span> <span class="n">BaseController</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <h3><span id="post-/user" href="post-/user"> POST /user </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@user_blueprint.route</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">create</span><span class="p">():</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>Endpoint to create an User object in database.
+Return 409 when username already used</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">form</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                    <span class="n">username</span><span class="o">=</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">],</span>
+                    <span class="n">address</span><span class="o">=</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">],</span>
+                    <span class="n">phone_number</span><span class="o">=</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;phone_number&#39;</span><span class="p">],</span>
+                    <span class="n">mail_address</span><span class="o">=</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;mail_address&#39;</span><span class="p">],</span>
+                    <span class="n">password</span><span class="o">=</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">])</span>
+        <span class="n">user</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">user</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+
+        <span class="n">user</span><span class="o">.</span><span class="n">create_wallet</span><span class="p">(</span><span class="s2">&quot;Wallet of {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">user</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="n">user</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">user</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="mi">201</span>
+
+    <span class="k">except</span> <span class="n">UsernameInUse</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">409</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">500</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <h3><span id="get-/user/<uid>" href="get-/user/<uid>"&gt; GET /user/<uid> </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@user_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/&lt;uid&gt;&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>Get user information by uid
+<strong>secured</strong></p>
+<p>Returns:</p>
+<pre><code>* 404 if uid corresponds to no user
+</code></pre>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get_or_none</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">uid</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">user</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="s1">&#39;User not found&#39;</span><span class="p">),</span> <span class="mi">404</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <h3><span id="get-/user/username/<username>" href="get-/user/username/<username>"&gt; GET /user/username/<username> </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@user_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/username/&lt;username&gt;&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">get_by_username</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>Get user information by username
+<strong>secured</strong></p>
+<p>Returns:
+    * 404 if username corresponds to no user</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get_or_none</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">user</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="s1">&#39;User not found&#39;</span><span class="p">),</span> <span class="mi">404</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>
