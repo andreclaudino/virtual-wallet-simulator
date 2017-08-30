@@ -5,11 +5,11 @@
 
 This notebook is an example of how using stone payment api generated in https://slack-files.com/T06M9ENDT-F5XK4J0P2-532510c5c0
 
-first step is to configure API parameters, in this case, the URL which will be used. For a local API it will be http://0.0.0.0:8080/
+first step is to configure API parameters, in this case, the URL which will be used. For a local API it will be https://0.0.0.0:8080/
 
 
 ```python
-url = 'http://0.0.0.0:8080/'
+url = 'https://0.0.0.0:8080/'
 api = lambda s: url+s
 ```
 
