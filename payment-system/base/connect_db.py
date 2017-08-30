@@ -1,4 +1,4 @@
-import json
+import os
 import neomodel.config
 
 # === Database Connection Class ===
@@ -15,8 +15,9 @@ class ConnectDB:
         Load configuration from *db_credentials.json* file in working directory
         :return: dictionary of database connection configuration
         """
-        with open('db_credentials.json') as f:
-            return json.load(f)
+        return dict(url=os.environ.get("GRAPHENEDB_BOLT_URL"),
+                    user=os.environ.get("GRAPHENEDB_BOLT_USER"),
+                    password=os.environ.get("GRAPHENEDB_BOLT_PASSWORD"))
 
     # === database connector ===
     @staticmethod
@@ -26,4 +27,4 @@ class ConnectDB:
         """
         file_config = ConnectDB.load_default_config()
         neomodel.config.DATABASE_URL =\
-            '{protocol}://{user}:{password}@{url}'.format(**file_config)
+            'bolt://{user}:{password}@{url}'.format(**file_config)

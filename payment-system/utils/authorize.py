@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import json
+import os
 from flask import request
 from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadSignature
 
@@ -29,26 +29,9 @@ def server_config():
     *  secret_key: secret key used to sign auth token
     *  expiration_time: time to live of auth token
     """
-    defaults = {
-                'run_config': {
-                    'port': 8080,
-                    'host': '0.0.0.0',
-                    'debug': True
-                },
-                'secret_key': '0000000000000',
-                'expiration_time': 3600
-               }
 
-    # load server configuration
-    try:
-        with open('server_config.json') as f:
-            return json.load(f)
-    except FileNotFoundError as e:
-        # if file not found, return defaults and raise warn
-        return defaults
-    except ValueError as e:
-        # if file found, but has problem in parse, raise exception
-        print("Error parsing 'server_config.json': {}".format(e))
+    return dict(secret_key=os.environ.get("SECRET_KEY"),
+                expiration_time=int(os.environ.get("EXPIRATION_TIME")))
 
 def generate_auth_token(user):
     """
