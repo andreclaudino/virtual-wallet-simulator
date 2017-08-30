@@ -7,15 +7,13 @@ from utils.authorize import server_config
 """
 This script launches payment-system server from configurations
 using configurations returned by server_config().
-
-It neeed certification files **cert.pem** and **key.pem** in launch directory
 """
 
+run_config = server_config()['run_config']
+
+app = create_app()
+
+ConnectDB.connect_database()
+
 if __name__ == "__main__":
-
-    run_config = server_config()['run_config']
-
-    app = create_app()
-
-    ConnectDB.connect_database()
     app.run(ssl_context=('cert.pem', 'key.pem'), **run_config)
