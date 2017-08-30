@@ -1,1 +1,1 @@
-web: gunicorn --pythonpath payment-system server:runner --preload
+web: gunicorn --pythonpath payment-system server:runner --worker-class gevent
