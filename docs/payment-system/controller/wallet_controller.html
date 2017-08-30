@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>wallet_controller.py</title>
+  <link rel="stylesheet" href="../../pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>wallet_controller.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask.globals</span> <span class="kn">import</span> <span class="n">request</span>
+<span class="kn">from</span> <span class="nn">neomodel.exception</span> <span class="kn">import</span> <span class="n">DoesNotExist</span>
+
+<span class="kn">from</span> <span class="nn">base.base_controller</span> <span class="kn">import</span> <span class="n">BaseController</span>
+<span class="kn">from</span> <span class="nn">exceptions.card_exceptions</span> <span class="kn">import</span> <span class="n">NotEnoughCardArguments</span><span class="p">,</span> <span class="n">PaymentExceed</span>
+<span class="kn">from</span> <span class="nn">exceptions.wallet_exceptions</span> <span class="kn">import</span> <span class="n">WalletLimitExceed</span><span class="p">,</span> <span class="n">WalletLimitNotAllowed</span><span class="p">,</span> <span class="n">RealLimitExceeded</span>
+<span class="kn">from</span> <span class="nn">model.card</span> <span class="kn">import</span> <span class="n">Card</span>
+<span class="kn">from</span> <span class="nn">model.wallet</span> <span class="kn">import</span> <span class="n">Wallet</span>
+<span class="kn">from</span> <span class="nn">utils.authorize</span> <span class="kn">import</span> <span class="n">authenticated</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>=== Wallet route module ===</p>
+<p>Endpoints to get information about wallet and cards,
+purchas, manage wallet limits and cards and pay card</p>
+<p>All endpoints in here are secured, i.e. they need
+a valid token</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">wallet_blueprint</span> <span class="o">=</span> <span class="n">BaseController</span><span class="p">(</span><span class="s1">&#39;wallet&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <h3><span id="get-/wallet" href="get-/wallet"> GET /wallet </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">get_wallet_info</span><span class="p">(</span><span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>Return wallet basic information</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">wallet</span> <span class="o">=</span> <span class="n">Wallet</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get_or_none</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">contents</span><span class="p">[</span><span class="s1">&#39;wid&#39;</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">500</span>
+
+    <span class="k">return</span> <span class="n">wallet</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <h3><span id="put-/wallet/real_limit" href="put-/wallet/real_limit"> PUT /wallet/real_limit </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/real_limit&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PUT&#39;</span><span class="p">])</span>
+<span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/real_limit/&lt;float:value&gt;&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PUT&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">set_real_limit</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>Change real limit (user defined maximum limit) of a wallet
+Returns:</p>
+<pre><code> * 406 if maximum limit was exceed
+ * 406 if free limit become negative
+</code></pre>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="k">if</span> <span class="n">value</span> <span class="k">else</span> <span class="n">request</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+
+        <span class="n">wallet</span> <span class="o">=</span> <span class="n">Wallet</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">contents</span><span class="p">[</span><span class="s1">&#39;wid&#39;</span><span class="p">])</span>
+        <span class="n">wallet</span><span class="o">.</span><span class="n">real_limit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">wallet</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">wallet</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+    <span class="k">except</span> <span class="n">WalletLimitExceed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">406</span>
+    <span class="k">except</span> <span class="n">WalletLimitNotAllowed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">406</span>
+    <span class="k">except</span> <span class="n">DoesNotExist</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">404</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">500</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <h3><span id="post-/wallet/cards" href="post-/wallet/cards"> POST /wallet/cards </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/cards&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">create_card</span><span class="p">(</span><span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>Add a card to the wallet.
+Returns:
+    * 406 if there is not all necessary card arguments</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">wallet</span> <span class="o">=</span> <span class="n">Wallet</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">contents</span><span class="p">[</span><span class="s1">&#39;wid&#39;</span><span class="p">])</span>
+
+        <span class="n">card</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">create_card</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">],</span>
+                                  <span class="n">due_day</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;due_day&#39;</span><span class="p">]),</span>
+                                  <span class="n">expiration_date</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;expiration_date&#39;</span><span class="p">],</span>
+                                  <span class="n">cvv</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;cvv&#39;</span><span class="p">],</span>
+                                  <span class="n">max_limit</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;max_limit&#39;</span><span class="p">]))</span>
+
+        <span class="n">wallet</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">card</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">NotEnoughCardArguments</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">406</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">500</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <h3><span id="delete-/wallet/cards/cid" href="delete-/wallet/cards/cid"> DELETE /wallet/cards/cid </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/cards&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;DELETE&#39;</span><span class="p">])</span>
+<span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/cards/&lt;cid&gt;&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;DELETE&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">deactivate_card</span><span class="p">(</span><span class="n">cid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>Deactivate a card, i.e. same as delete,
+it become unuseful for wallet, but is still
+able to receive payments until reach maximum
+payment limit, it is, until free_limit become
+max_limit</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cid</span> <span class="o">=</span> <span class="n">cid</span> <span class="k">if</span> <span class="n">cid</span> <span class="k">else</span> <span class="n">request</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;cid&#39;</span><span class="p">]</span>
+        <span class="n">card</span> <span class="o">=</span> <span class="n">Card</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">cid</span><span class="p">)</span>
+        <span class="n">card</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">card</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="n">card</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">card</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+    <span class="k">except</span> <span class="n">DoesNotExist</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">404</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">500</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <h3><span id="get-/wallet/cards" href="get-/wallet/cards"> GET /wallet/cards </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/cards&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">get_cards</span><span class="p">(</span><span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      <p>Get cards related to token's wallet</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">wallet</span> <span class="o">=</span> <span class="n">Wallet</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">contents</span><span class="p">[</span><span class="s1">&#39;wid&#39;</span><span class="p">])</span>
+        <span class="n">cards</span> <span class="o">=</span> <span class="p">[</span><span class="n">card</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="n">wallet</span><span class="o">.</span><span class="n">cards</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">wid</span><span class="o">=</span><span class="n">wallet</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="n">cards</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">500</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      <h3><span id="get-/wallet/cards/sorted" href="get-/wallet/cards/sorted"> GET /wallet/cards/sorted </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/cards/sorted&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">get_sorted_cards</span><span class="p">(</span><span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>Get active cards related to token's
+wallet sorted in order of precedence
+for purchase</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">wallet</span> <span class="o">=</span> <span class="n">Wallet</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">contents</span><span class="p">[</span><span class="s1">&#39;wid&#39;</span><span class="p">])</span>
+        <span class="n">cards</span> <span class="o">=</span> <span class="p">[</span><span class="n">card</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="n">wallet</span><span class="o">.</span><span class="n">sorted_cards</span><span class="p">()]</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">wid</span><span class="o">=</span><span class="n">wallet</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="n">cards</span><span class="o">=</span><span class="n">cards</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">500</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <h3><span id="get-/wallet/cards/<cid>" href="get-/wallet/cards/<cid>"&gt; GET /wallet/cards/<cid> </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/cards/&lt;cid&gt;&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">get_card</span><span class="p">(</span><span class="n">cid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>Get a card with uid = cid
+Returns:</p>
+<pre><code>* 404 if card is not found
+</code></pre>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">card</span> <span class="o">=</span> <span class="n">Card</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">cid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">card</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+    <span class="k">except</span> <span class="n">DoesNotExist</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">404</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">500</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      <h3><span id="post-/wallet/purchase" href="post-/wallet/purchase"> POST /wallet/purchase </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/purchase&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/purchase/&lt;float:value&gt;&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">purchase</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      <p>Do a purchase token's wallet
+Returns:</p>
+<pre><code>* 406 if wallet limit will be exceed
+by this purchase
+* 406 if wallet limit is less than
+the needed for purchase
+</code></pre>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="k">if</span> <span class="n">value</span> <span class="k">else</span> <span class="n">request</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+        <span class="n">wallet</span> <span class="o">=</span> <span class="n">Wallet</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">contents</span><span class="p">[</span><span class="s1">&#39;wid&#39;</span><span class="p">])</span>
+        <span class="n">purchase_obj</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">purchase</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">purchase_obj</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+    <span class="k">except</span> <span class="n">DoesNotExist</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">404</span>
+    <span class="k">except</span> <span class="n">RealLimitExceeded</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">406</span>
+    <span class="k">except</span> <span class="n">WalletLimitNotAllowed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">406</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">500</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      <h3><span id="post-/wallet/cards/<cid>/pay" href="post-/wallet/cards/<cid>/pay"&gt; POST /wallet/cards/<cid>/pay </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/cards/pay&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="nd">@wallet_blueprint.route</span><span class="p">(</span><span class="s1">&#39;/cards/&lt;cid&gt;/pay&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="nd">@authenticated</span>
+<span class="k">def</span> <span class="nf">pay_card</span><span class="p">(</span><span class="n">cid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">contents</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      <p>Relase credit of a card identified by uid=cid
+Require cid and value (amount to be payed)
+Returns:</p>
+<pre><code>* 404 if card don't exist
+* 406 if free_limit + value
+exceed maximum card limit
+</code></pre>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cid</span> <span class="o">=</span> <span class="n">cid</span> <span class="k">if</span> <span class="n">cid</span> <span class="k">else</span> <span class="n">request</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;cid&#39;</span><span class="p">]</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
+
+        <span class="n">card</span> <span class="o">=</span> <span class="n">Card</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">cid</span><span class="p">)</span>
+        <span class="n">pay_object</span> <span class="o">=</span> <span class="n">card</span><span class="o">.</span><span class="n">pay</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pay_object</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+    <span class="k">except</span> <span class="n">DoesNotExist</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">404</span>
+    <span class="k">except</span> <span class="n">PaymentExceed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">406</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="mi">500</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

@@ -1,3 +1,8 @@
+"""
+This module has some custom exceptions related to card
+module.
+"""
+
 class CardException(Exception):
     """
     Base class for card exceptions

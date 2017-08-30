@@ -1,13 +1,14 @@
 import json
 import neomodel.config
 
+# === Database Connection Class ===
 class ConnectDB:
     """
     ConnectDB:
-    this class is used to read configuration file and set connection
-    to Neo4j database.
+    Reads db_credentials.json and connect neo4j database
     """
 
+    # === Configuration Loader ===
     @staticmethod
     def load_default_config():
         """
@@ -17,6 +18,7 @@ class ConnectDB:
         with open('db_credentials.json') as f:
             return json.load(f)
 
+    # === database connector ===
     @staticmethod
     def connect_database():
         """

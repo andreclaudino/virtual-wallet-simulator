@@ -1,5 +1,6 @@
 """
-This module has some custom exceptions related to user module.
+This module has some custom exceptions related to user
+module.
 """
 
 

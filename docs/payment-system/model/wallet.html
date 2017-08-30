@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>wallet.py</title>
+  <link rel="stylesheet" href="../../pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>wallet.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">neomodel.cardinality</span> <span class="kn">import</span> <span class="n">One</span>
+<span class="kn">from</span> <span class="nn">neomodel.properties</span> <span class="kn">import</span> <span class="n">FloatProperty</span><span class="p">,</span> <span class="n">StringProperty</span>
+<span class="kn">from</span> <span class="nn">neomodel.relationship_manager</span> <span class="kn">import</span> <span class="n">RelationshipTo</span><span class="p">,</span> <span class="n">RelationshipFrom</span>
+
+<span class="kn">from</span> <span class="nn">base.base_model</span> <span class="kn">import</span> <span class="n">BaseModel</span>
+<span class="kn">from</span> <span class="nn">exceptions.wallet_exceptions</span> <span class="kn">import</span> <span class="n">WalletLimitExceed</span><span class="p">,</span> <span class="n">RealLimitExceeded</span>
+<span class="kn">from</span> <span class="nn">exceptions.wallet_exceptions</span> <span class="kn">import</span> <span class="n">UnchangeableWalletValue</span>
+<span class="kn">from</span> <span class="nn">exceptions.wallet_exceptions</span> <span class="kn">import</span> <span class="n">WalletLimitNotAllowed</span>
+<span class="kn">from</span> <span class="nn">model.billing</span> <span class="kn">import</span> <span class="n">Purchase</span>
+<span class="kn">from</span> <span class="nn">model.card</span> <span class="kn">import</span> <span class="n">Card</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>=== wallet model ===</p>
+<p>This module contains wallet model class</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>Model a wallet in database</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Wallet</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">label</span> <span class="o">=</span> <span class="n">StringProperty</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">max_limit_</span> <span class="o">=</span> <span class="n">FloatProperty</span><span class="p">(</span><span class="n">db_property</span><span class="o">=</span><span class="s1">&#39;max_limit&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">real_limit_</span> <span class="o">=</span> <span class="n">FloatProperty</span><span class="p">(</span><span class="n">db_property</span><span class="o">=</span><span class="s1">&#39;real_limit&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">free_limit_</span> <span class="o">=</span> <span class="n">FloatProperty</span><span class="p">(</span><span class="n">db_property</span><span class="o">=</span><span class="s1">&#39;free_limit&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">owner</span> <span class="o">=</span> <span class="n">RelationshipFrom</span><span class="p">(</span><span class="s1">&#39;.user.User&#39;</span><span class="p">,</span> <span class="s1">&#39;OWNED&#39;</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="n">One</span><span class="p">)</span>
+    <span class="n">cards</span> <span class="o">=</span> <span class="n">RelationshipTo</span><span class="p">(</span><span class="s1">&#39;.card.Card&#39;</span><span class="p">,</span> <span class="s1">&#39;CONTAINS&#39;</span><span class="p">)</span>
+
+    <span class="n">purchases</span> <span class="o">=</span> <span class="n">RelationshipTo</span><span class="p">(</span><span class="s1">&#39;.billing.Purchase&#39;</span><span class="p">,</span> <span class="s1">&#39;DID&#39;</span><span class="p">)</span>
+    <span class="n">payments</span> <span class="o">=</span> <span class="n">RelationshipFrom</span><span class="p">(</span><span class="s1">&#39;.billing.Payment&#39;</span><span class="p">,</span> <span class="s1">&#39;RECEIVED&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <h3><span id="real_limit" href="real_limit"> real_limit </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">real_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>real_limit is set to max_limit by default</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_limit_</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_limit_</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_limit</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <p>Wallet limit set by user. Should be
+less than max_limit and non-negative
+:param value: new real limit
+:return:</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="nd">@real_limit.setter</span>
+    <span class="k">def</span> <span class="nf">real_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_limit</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">WalletLimitExceed</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">WalletLimitNotAllowed</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">real_limit_</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <h3><span id="max_limit" href="max_limit"> max_limit </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_limit_</span>
+
+    <span class="nd">@max_limit.setter</span>
+    <span class="k">def</span> <span class="nf">max_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">UnchangeableWalletValue</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <h3><span id="free_limit" href="free_limit"> free_limit </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">free_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p>usable remaining limit related to max_limit</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_limit_</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="nd">@free_limit.setter</span>
+    <span class="k">def</span> <span class="nf">free_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">UnchangeableWalletValue</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      <h3><span id="real_free_limit" href="real_free_limit"> real_free_limit </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">real_free_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>Analogous to free limit, but related to
+real_limit instead of max_limit
+:return:</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_limit</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_used</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <h3><span id="total_used" href="total_used"> total_used </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">total_used</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_limit</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_limit</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <h3><span id="limits-manipulators" href="limits-manipulators"> Limits Manipulators </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">increase_free_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      <p>Increase free_limit of wallet, usually
+in card bill payments.
+:param value: amount to be increased
+:return: new free limit</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">free_limit_</span> <span class="o">+=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_limit</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      <p>Decrease free_limit of wallet, usually
+in purchases
+Raises an exception if limit become negative
+:param value: amount to reduce
+:return: new limit</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">decrease_free_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">free_limit</span> <span class="o">&lt;</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">WalletLimitNotAllowed</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">increase_free_limit</span><span class="p">(</span><span class="o">-</span><span class="n">value</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">increase_max_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_limit_</span> <span class="o">+=</span> <span class="n">amount</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_limit</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">decrease_max_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-21'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-21'>#</a>
+      </div>
+      <p>Raise exception if limit become negative</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">if</span> <span class="n">amount</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_limit</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">WalletLimitNotAllowed</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_limit_</span> <span class="o">-=</span> <span class="n">amount</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_limit</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_limit</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">real_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_limit</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_limit</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-22'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-22'>#</a>
+      </div>
+      <h3><span id="card-manipulators" href="card-manipulators"> Card manipulators </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">create_card</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">card</span> <span class="o">=</span> <span class="n">Card</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">card</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">card</span><span class="o">.</span><span class="n">wallet</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">card</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">increase_max_limit</span><span class="p">(</span><span class="n">card</span><span class="o">.</span><span class="n">max_limit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">increase_free_limit</span><span class="p">(</span><span class="n">card</span><span class="o">.</span><span class="n">free_limit</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">card</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">card</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-23'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-23'>#</a>
+      </div>
+      <p>Sort cards by distance to due date, than to lower limit
+considering today as fake_today
+:param fake_today: a pseudo date (or None for today)
+:param date_format: (format of used date)
+:return: active cards sorted according to rules in
+(enuntiate)[https://slack-files.com/T06M9ENDT-F5XK4J0P2-532510c5c0]</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">sorted_cards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fake_today</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">date_format</span><span class="o">=</span><span class="s1">&#39;%m/</span><span class="si">%d</span><span class="s1">/%Y&#39;</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-24'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-24'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">cards</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">card</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
+                <span class="n">card</span><span class="o">.</span><span class="n">set_fake_today</span><span class="p">(</span><span class="n">fake_today</span><span class="p">,</span> <span class="n">date_format</span><span class="p">)</span>
+                <span class="n">cards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">card</span><span class="p">)</span>
+
+        <span class="n">cards</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cards</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-25'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-25'>#</a>
+      </div>
+      <h3><span id="object-dictionarization" href="object-dictionarization"> object dictionarization </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">real_limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">real_limit</span><span class="p">,</span>
+                    <span class="n">max_limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_limit</span><span class="p">,</span>
+                    <span class="n">free_limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">free_limit</span><span class="p">,</span>
+                    <span class="n">real_free_limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">real_free_limit</span><span class="p">,</span>
+                    <span class="n">total_used</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">total_used</span><span class="p">,</span>
+                    <span class="n">total_cards</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-26'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-26'>#</a>
+      </div>
+      <h3><span id="purchase" href="purchase"> purchase </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">purchase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-27'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-27'>#</a>
+      </div>
+      <p>Purchase following rules in
+(enuntiate)[https://slack-files.com/T06M9ENDT-F5XK4J0P2-532510c5c0]
+:param value:
+:return: Purchase object generated on purchase</p>
+<p>Raise RealLimitExceeded if purchase exceeds real_free_limit</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_free_limit</span> <span class="o">&lt;</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RealLimitExceeded</span><span class="p">()</span>
+
+        <span class="n">purchase</span> <span class="o">=</span> <span class="n">Purchase</span><span class="p">()</span>
+        <span class="n">purchase</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">purchase</span> <span class="o">=</span> <span class="n">purchase</span><span class="o">.</span><span class="n">set_wallet</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-28'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-28'>#</a>
+      </div>
+      <p>If possible, purchase with only one card</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorted_cards</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">card</span><span class="o">.</span><span class="n">free_limit</span> <span class="o">&gt;=</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">purchase</span> <span class="o">=</span> <span class="n">purchase</span><span class="o">.</span><span class="n">use_card</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">purchase</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-29'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-29'>#</a>
+      </div>
+      <p>Else, purchase with multiple cards</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorted_cards</span><span class="p">():</span>
+
+            <span class="n">value_in_card</span> <span class="o">=</span> <span class="n">value</span> <span class="k">if</span> <span class="n">card</span><span class="o">.</span><span class="n">free_limit</span> <span class="o">&gt;</span> <span class="n">value</span> <span class="k">else</span> <span class="n">card</span><span class="o">.</span><span class="n">free_limit</span>
+
+            <span class="n">purchase</span> <span class="o">=</span> <span class="n">purchase</span><span class="o">.</span><span class="n">use_card</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">value_in_card</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">-=</span> <span class="n">value_in_card</span>
+
+            <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">purchase</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

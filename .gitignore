@@ -111,3 +111,9 @@ db_credentials\.json
 payment-system/base/\.idea/
 
 payment-system/server\.py
+
+server_config\.json
+
+cert\.pem
+
+key\.pem

@@ -1,25 +1,42 @@
 from flask import request
-from itsdangerous import SignatureExpired, BadSignature
+from itsdangerous import SignatureExpired
+from itsdangerous import BadSignature
 
 from base.base_controller import BaseController
-from exceptions.user_exceptions import UsernameNotFound, UserPasswordIncorrect, UserInactive
+from exceptions.user_exceptions import UsernameNotFound
+from exceptions.user_exceptions import UserPasswordIncorrect
+from exceptions.user_exceptions import UserInactive
 from model.user import User
-from utils.authorize import generate_auth_token, read_auth_token
+from utils.authorize import generate_auth_token
+from utils.authorize import read_auth_token
 
+# === Controller for root endpoint ===
+"""
+RootController is a blueprint to deal with root of server.
+Used to modularize instead of routing directly in application
+"""
 root_blueprint = BaseController('root')
 
+# === / ===
 @root_blueprint.route('/')
 def health_check():
+    """
+    Simple health check to evaluate if server
+    is running properly
+    """
     return dict(api_status='OK')
 
-
+# === POST /login ===
 @root_blueprint.route('/login', methods=['POST'])
 def login():
     """
-    Perform login, return Auth token + User object
-    :param username: username to login
-    :param password: password to login
-    :return: User and object and auth_token
+    Perform login and generate auth token
+    for this session.
+    Returns:
+
+        * 401 for username not found
+        * 401 for password incorrect
+        * 401 for user marked as inactive
     """
     try:
         form = request.values
@@ -41,9 +58,18 @@ def login():
     except Exception as e:
         return dict(error=str(e)), 500
 
+# === GET /whoami ===
 @root_blueprint.route('/whoami', methods=['GET'])
 def whoami():
+    """
+    Simple endpoint to get information from
+    auth_token.
 
+    Returns:
+
+        * 401 for expired token
+        * 401 for false token
+    """
     try:
 
         token = request.headers['token']

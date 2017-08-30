@@ -1,16 +1,18 @@
-from neomodel import StructuredNode, UniqueIdProperty, StringProperty
-from neomodel.hooks import hooks
+from neomodel import StructuredNode
+from neomodel import UniqueIdProperty
 from neomodel.properties import BooleanProperty
 
 
+# === BaseModel ===
 class BaseModel(StructuredNode):
     """
     This is a base class for models stored in Neo4J.
-    Main idea of this class is give an uid for object
-    and grant access to database
+
+    *  make unique identifies uid for all objects
+    *  give active property for all objets (used instead of delete)
     """
 
-    # Unique identifier
+    # Unique identifier (use it instead of neo4j id)
     uid = UniqueIdProperty()
     active_ = BooleanProperty(default=True)
 

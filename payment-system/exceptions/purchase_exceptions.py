@@ -1,3 +1,7 @@
+"""
+This module has some custom exceptions related to purchase
+class.
+"""
 
 class PurchaseException(Exception):
     """

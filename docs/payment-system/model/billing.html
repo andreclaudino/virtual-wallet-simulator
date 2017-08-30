@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>billing.py</title>
+  <link rel="stylesheet" href="../../pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>billing.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>This module contains classes used in purchase and payment</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">neomodel.cardinality</span> <span class="kn">import</span> <span class="n">One</span>
+<span class="kn">from</span> <span class="nn">neomodel.properties</span> <span class="kn">import</span> <span class="n">FloatProperty</span><span class="p">,</span> <span class="n">DateTimeProperty</span>
+<span class="kn">from</span> <span class="nn">neomodel.relationship</span> <span class="kn">import</span> <span class="n">StructuredRel</span>
+<span class="kn">from</span> <span class="nn">neomodel.relationship_manager</span> <span class="kn">import</span> <span class="n">RelationshipTo</span><span class="p">,</span> <span class="n">RelationshipFrom</span>
+
+<span class="kn">from</span> <span class="nn">base.base_model</span> <span class="kn">import</span> <span class="n">BaseModel</span>
+<span class="kn">from</span> <span class="nn">exceptions.purchase_exceptions</span> <span class="kn">import</span> <span class="n">PurchaseUnchangeableProperty</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <h2><span id="billing-action" href="billing-action"> Billing Action </span></h2>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">BillingAction</span><span class="p">(</span><span class="n">StructuredRel</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>A relationship definition who related cards and Purchases,
+once the purchase may be done in more than a card, this class
+defines how much was payid in which card.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">value</span> <span class="o">=</span> <span class="n">FloatProperty</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">date_time</span> <span class="o">=</span> <span class="n">DateTimeProperty</span><span class="p">(</span><span class="n">default_now</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <h3><span id="purchase" href="purchase"> Purchase </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Purchase</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>Purchase objects represents a purchase made with wallet,
+it is, with one or more cards</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">total</span> <span class="o">=</span> <span class="n">FloatProperty</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="n">cards_</span> <span class="o">=</span> <span class="n">RelationshipTo</span><span class="p">(</span><span class="s1">&#39;.card.Card&#39;</span><span class="p">,</span> <span class="s1">&#39;WITH&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">BillingAction</span><span class="p">)</span>
+    <span class="n">wallet_</span> <span class="o">=</span> <span class="n">RelationshipFrom</span><span class="p">(</span><span class="s1">&#39;.wallet.Wallet&#39;</span><span class="p">,</span> <span class="s1">&#39;DONE_WITH&#39;</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="n">One</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">wallet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wallet_</span>
+
+    <span class="nd">@wallet.setter</span>
+    <span class="k">def</span> <span class="nf">wallet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wallet</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PurchaseUnchangeableProperty</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cards</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards_</span>
+
+    <span class="nd">@cards.setter</span>
+    <span class="k">def</span> <span class="nf">cards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">card</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PurchaseUnchangeableProperty</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">use_card</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">card</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cards_</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">card</span><span class="o">.</span><span class="n">purchases</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+
+        <span class="n">card</span><span class="o">.</span><span class="n">decrease_free_limit</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">card</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">card_relations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="p">:</span>
+            <span class="n">relation</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">relation</span><span class="p">[</span><span class="s1">&#39;cid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">card</span><span class="o">.</span><span class="n">uid</span>
+
+            <span class="n">rel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cards</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="n">card</span><span class="p">)</span>
+            <span class="n">relation</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">relation</span><span class="p">[</span><span class="s1">&#39;date_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="n">date_time</span>
+
+            <span class="n">card_relations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">relation</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">wid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wallet</span><span class="o">.</span><span class="n">single</span><span class="p">()</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span>
+                    <span class="n">total</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">total</span><span class="p">,</span>
+                    <span class="n">relations</span><span class="o">=</span><span class="n">relation</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_wallet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wallet</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wallet_</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">wallet</span><span class="p">)</span>
+        <span class="n">wallet</span><span class="o">.</span><span class="n">purchases</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">wallet</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <h3><span id="payment" href="payment"> Payment </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Payment</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <p>Payment object represents a payment for a card
+contained in a wallet</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">value</span> <span class="o">=</span> <span class="n">FloatProperty</span><span class="p">()</span>
+    <span class="n">date_time</span> <span class="o">=</span> <span class="n">DateTimeProperty</span><span class="p">(</span><span class="n">default_now</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">card</span> <span class="o">=</span> <span class="n">RelationshipTo</span><span class="p">(</span><span class="s1">&#39;.card.Card&#39;</span><span class="p">,</span> <span class="s1">&#39;FOR&#39;</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="n">One</span><span class="p">)</span>
+    <span class="n">wallet</span> <span class="o">=</span> <span class="n">RelationshipFrom</span><span class="p">(</span><span class="s1">&#39;.wallet.Wallet&#39;</span><span class="p">,</span> <span class="s1">&#39;FOR&#39;</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="n">One</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                    <span class="n">cid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">card</span><span class="o">.</span><span class="n">single</span><span class="p">()</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span>
+                    <span class="n">date_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">date_time</span><span class="p">,</span>
+                    <span class="n">wid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wallet</span><span class="o">.</span><span class="n">single</span><span class="p">()</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>
