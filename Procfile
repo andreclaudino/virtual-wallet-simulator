@@ -1,1 +1,1 @@
-web: gunicorn --pythonpath payment-system server:runner --worker-class gevent
+web: gunicorn --pythonpath payment-system server:app --worker-class gevent -b 0.0.0.0:5000

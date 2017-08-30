@@ -8,11 +8,8 @@ This script launches payment-system server from configurations
 using configurations returned by server_config().
 """
 
-def runner(env=None, response=None):
-    ConnectDB.connect_database()
 
-    app = create_app()
-    app.run()
+ConnectDB.connect_database()
 
-if __name__ == '__main__':
-    runner()
+app = create_app()
+
