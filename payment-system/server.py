@@ -7,6 +7,7 @@ from utils.authorize import server_config
 """
 This script launches payment-system server from configurations
 using configurations returned by server_config().
+Used to run as standalone app.
 """
 
 run_config = server_config()['run_config']
