@@ -13,6 +13,9 @@ from model.billing import BillingAction, Payment
 
 
 class Card(BaseModel):
+    """
+    Models a card in database
+    """
     number = StringProperty(required=True)
     due_day = IntegerProperty(required=True)
     expiration_date = DateProperty(required=True)
@@ -54,7 +57,7 @@ class Card(BaseModel):
     @property
     def due_date(self):
         """
-        Calculate next due date based on atual date and due_day
+        Calculate next due date based on actual date and due_day
         :return: next due date
         """
         due_date = self.get_fake_today().replace(day=self.due_day)
@@ -241,7 +244,8 @@ class Card(BaseModel):
     def __lt__(self, other):
         """
         Order cards, first by largest due date,
-        then by smaller maxmimum limit
+        then by smaller maxmimum limit.
+        rules defined in https://slack-files.com/T06M9ENDT-F5XK4J0P2-532510c5c0
         :param other: other object which is beeing compared
         :return: True if is lower, False if is bigger than other
         """

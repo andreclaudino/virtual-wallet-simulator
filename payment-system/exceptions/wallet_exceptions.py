@@ -1,3 +1,8 @@
+"""
+This module has some custom exceptions related to wallet
+module.
+"""
+
 class WalletException(Exception):
     """
     Base class for wallet exceptions

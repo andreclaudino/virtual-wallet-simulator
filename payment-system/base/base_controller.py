@@ -1,5 +1,6 @@
 from flask import Blueprint
 
+# === BaseController ===
 class BaseController(Blueprint):
     """
     BaseController
@@ -9,6 +10,7 @@ class BaseController(Blueprint):
     configurations
     """
 
+    # === initialization ===
     def __init__(self, name=__name__, **kwargs):
         """
         Simple Blueprint with some configurations
@@ -18,6 +20,7 @@ class BaseController(Blueprint):
 
         self.register_error_handler(404, self.handle_404)
 
+    # === handle 404 ===
     def handle_404(self, _):
         """
         Handle 404 errors not handled by other means

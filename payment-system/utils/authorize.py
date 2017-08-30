@@ -4,13 +4,30 @@ from flask import json
 from flask import request
 from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadSignature
 
+"""
+This module contains functions useful for authorization
+and basic server configuration
+"""
 
 def server_config():
     """
     Function to get server configuration from
     file (server_config.json), or return defaults
-    (best suited for development)
-    :return: dictionary with configurations
+    (best suited for development) if file not
+    found
+
+    Have the following fields:
+
+    *  run_config: dictionary with configurations
+    for flask app run
+
+        *  port: http port to listen
+        *  host: http host to listen
+        *  debug: if should run in flask debug
+        mode (optional, default=False)
+
+    *  secret_key: secret key used to sign auth token
+    *  expiration_time: time to live of auth token
     """
     defaults = {
                 'run_config': {
@@ -34,7 +51,15 @@ def server_config():
         print("Error parsing 'server_config.json': {}".format(e))
 
 def generate_auth_token(user):
+    """
+    Generate a signed auth token with key and
+    expiration time got from server_config()
 
+    * :param user: user who logged in
+    return: signed token containing
+    uid (user uid), wid (wallet uid),
+    and username
+    """
     username = user.username
     uid = user.uid
     wid = user.wallet_uid()
@@ -49,9 +74,11 @@ def generate_auth_token(user):
 def read_auth_token(token):
     """
     Decode a token and get username and uid
-    :param token: auth_token
-    :return: username, user uid, wallet uid
-    :raise:
+
+    *  :param token: auth_token
+    *  :return: username, user uid, wallet uid
+    *  :raise:
+
         * SignatureExpired: token is valid, but expired
         * BadSignature: token is not valid
     """
@@ -62,6 +89,13 @@ def read_auth_token(token):
 
 
 def verify_token(token):
+    """
+    Function which returns True if token
+    is true and valid, else returns False
+
+    *  :param token:
+    *  :return: Boolean
+    """
     try:
         if read_auth_token(token):
             return True
@@ -72,6 +106,12 @@ def verify_token(token):
 
 
 def authenticated(f):
+    """
+    Decorator to secure endpoints:
+    evaluate token, if valid, give it
+    contents to function (username, uid,
+    and wid), else, return 401
+    """
     @wraps(f)
     def decorated(*args, **kwargs):
         # get token, if exist

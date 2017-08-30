@@ -6,13 +6,26 @@ from neomodel.relationship_manager import RelationshipTo, RelationshipFrom
 from base.base_model import BaseModel
 from exceptions.purchase_exceptions import PurchaseUnchangeableProperty
 
+"""
+This module contains classes used in purchase and payment
+"""
 
+# == Billing Action ===
 class BillingAction(StructuredRel):
+    """
+    A relationship definition who related cards and Purchases,
+    once the purchase may be done in more than a card, this class
+    defines how much was payid in which card.
+    """
     value = FloatProperty(required=True)
     date_time = DateTimeProperty(default_now=True)
 
-
+# === Purchase ===
 class Purchase(BaseModel):
+    """
+    Purchase objects represents a purchase made with wallet,
+    it is, with one or more cards
+    """
     total = FloatProperty(required=True)
 
     cards_ = RelationshipTo('.card.Card', 'WITH', model=BillingAction)
@@ -71,7 +84,12 @@ class Purchase(BaseModel):
         return self
 
 
+# === Payment ===
 class Payment(BaseModel):
+    """
+    Payment object represents a payment for a card
+    contained in a wallet
+    """
     value = FloatProperty()
     date_time = DateTimeProperty(default_now=True)
     card = RelationshipTo('.card.Card', 'FOR', cardinality=One)
