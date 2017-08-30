@@ -28,7 +28,6 @@ def server_config():
             return json.load(f)
     except FileNotFoundError as e:
         # if file not found, return defaults and raise warn
-        #warnings.warn("File 'server_config.json' not found in running directory")
         return defaults
     except ValueError as e:
         # if file found, but has problem in parse, raise exception
