@@ -44,71 +44,6 @@ Go to [neo4j admin page](http://0.0.0.0:7474/browser/) and change default passwo
 For more information and next steps in neo4j configuration read [this documentation](https://neo4j.com/docs/operations-manual/current/installation/docker/) on neo4j page.
 
 
-## Certificates (for standalone only)
-System is made for SSL, so, this needs SSL certificates. You could use self-signed certificates for testing/development purposes. Certificates pair should be names cert.pem and key.pem, you could find information on how to generate these certificates on **Self-Signed Certificates* section of [this link ](https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https).
-
-HTTPS will be used only when *server.py* **is the main file**, this is not the case when running using ``flask run``.
-
-On unix shell, it basically consists in running:
-
-```SHELL
-openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365
-```
-
-this will generate files **cert.pem** and **key.pem**, these should be placed in our **running directory**.
-
-## Configuration files (standalone only)
-The system uses some configuration files (they should be put in root directory too), these files are:
-
-### db_credentials.json
-
-These file contains information to acces neo4j database, in case, username as **user**, **password**, running host as **url**, **protocol ** (prefer to keep bolt as it is not tested with others) and neo4j running **port**
-```JSON
-{
-  "user": "neo4j",
-  "password": "neo4j",
-  "url": "localhost",
-  "protocol": "bolt",
-  "port": 7687
-}
-```
-An important observation is: all fields are mandatory, since with neo4j default values.
-
-### server_config.json
-
-This file has three primary fields:
-
-* **run_config**: could be understood as a python dictionary with values to be passed for flask application run command. These can be seen in *run* function section of [flask application object documentatio](http://flask.pocoo.org/docs/0.12/api/#application-object). This will be used only when *server.py* **is the main file**, this is not the case when running using ``flask run``.
-
-* **secret_key**: Secret key used to sign and crypto auth token
-* **expiration_time**: time to live for token
-
-```JSON
-{
-  "run_config" : {
-      "port": 8080,
-      "host": "0.0.0.0"
-   },
-
-   "secret_key": "907839b1-2803-4605-b560-032c7c9e4c34",
-   "expiration_time": 3600
-}
-```
-
-### Standalone Execution:
-
-Once environment is prepared next step is run the application, running the application as standalone server (for development purposes) is simple. In running directory (where configuration files and cloned/unziped repository is) just execute:
-
-```SHELL
-python3 virtual-wallet-simulator/server.py
-```
-
-or to run as flask application
-
-```
-SHELL
-FLASK_APP='virtual-wallet-simulator/server.py' flask run
-```
 ## Execution in a container
 To permit easy execution in containers and services like Heroku (the testing platfom), configuration files have to be changed to enviroment variables, they are:
 
@@ -124,7 +59,7 @@ Other variables are used for database connection, in this method, only bolt prot
 with these, using gunicorn would be simple as:
 
 ```SHELL
-web: gunicorn --pythonpath payment-system server_wsgi:app --worker-class gevent -b 0.0.0.0:$PORT
+web: gunicorn --pythonpath payment-system server:app --worker-class gevent -b 0.0.0.0:$PORT
 ```
 
 ## Tests and documentation:
